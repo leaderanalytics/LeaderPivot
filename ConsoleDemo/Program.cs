@@ -54,7 +54,7 @@ namespace ConsoleDemo
 
         static void _DisplayGraph(Vector<SalesData> v, int level)
         {
-            Console.WriteLine(new String('*', level) + " " + v.Value);
+            Console.WriteLine(new String('*', level) + " " + v.Value + " " + v.ColumnKey);
 
             foreach (Vector<SalesData> c in v.Children)
                 _DisplayGraph(c, level + 1);
