@@ -47,16 +47,18 @@ namespace LeaderPivot
                 // Add one for row zero which will display sort buttons for column dimensions
                 int rowsSpan = GetHeaderDepth(vector, false, 0) + 1;
 
-                // Count the number of expanded row dimensions.  This sets the width of the cell at 0,0.
-                int columnSpan = GetHeaderDepth(vector, true, 0) + 1;
+                // We cant set the width of the cell at 0,0 because we don't have row data.
+                int columnSpan = 1;
 
                 // Add row zero.  Add a cell to that row at 0,0 spanning row headers and column headers.
                 TableRow row = new TableRow();
                 row.Cells.Add(new Cell(null, rowsSpan, columnSpan));
                 t.Rows.Add(row);
 
-                // Fill the remaining columns in row zero.
-                row.Cells.Add(new Cell(null, 1, GetColumnHeaderCount(vector, 0)));
+                // Add a second cell to row zero that is as wid as the number of leaf node columns in vector.
+                int z = GetColumnHeaderCount(vector, 0);
+
+                row.Cells.Add(new Cell(null, 1, z));
 
                 // Add remaining rows to display column headers.  We have already added one.
                 for (int i = 0; i < rowsSpan - 1; i++)
@@ -89,10 +91,9 @@ namespace LeaderPivot
         // Finds the dimension (row or column) that has the greatest number of expanded levels.
         private int GetHeaderDepth(Vector<T> vector, bool checkRows, int maxDepth)
         {
-            int tmp = maxDepth;
-
+            int tmp = maxDepth + 1;
             foreach (Vector<T> child in vector.Children.Where(x => (x.IsRow && checkRows || !x.IsRow && !checkRows) && x.IsExpanded))
-                maxDepth = Math.Max(maxDepth, GetHeaderDepth(child, checkRows, tmp++));
+                maxDepth = Math.Max(maxDepth, GetHeaderDepth(child, checkRows, tmp));
 
             return maxDepth;
         }
@@ -100,13 +101,16 @@ namespace LeaderPivot
         // Returns the total number of cells required to display column headers for both collapsed and expanded dimensions.
         private int GetColumnHeaderCount(Vector<T> vector, int count)
         {
+            int tmp = 0;
+
+            foreach (Vector<T> child in vector.Children)
+                tmp += GetColumnHeaderCount(child, count);
+            
+            
             if (!vector.IsRow)
-                count += Math.Max(1, (vector.IsExpanded ? vector.Children.Count : 1));
-
-            foreach (Vector<T> child in vector.Children.Where(x => !x.IsLeafNode))
-                count = GetColumnHeaderCount(child, count);
-
-            return count;
+                count = vector.IsExpanded ? (vector.Children.Count == 0 ? 1 : 0) : 1;
+            
+            return count + tmp;
         }
 
         private Table BuildTableBody(Vector<T> vector, Table t, TableRow row)

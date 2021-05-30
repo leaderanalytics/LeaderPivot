@@ -69,7 +69,11 @@ namespace LeaderPivot
                             string header = (string.IsNullOrEmpty(template.Format) ? template.Group(grp.First()) : String.Format(template.Format, template.Group(grp.First()))).ToString() + " Total";
                             Vector<T> totals = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = isLeafNode, Value = header };
                             parent.Children.Add(totals);
-                            Build(totals, grp, childTemplates.Where(x => !x.IsRow), measures, level + 1);
+                            
+                            if(IsHeader)
+                                CreateMeasureHeaders(totals, measures);
+                            else
+                                Build(totals, grp, childTemplates.Where(x => !x.IsRow), measures, level + 1);
                         }
                     }
                 }

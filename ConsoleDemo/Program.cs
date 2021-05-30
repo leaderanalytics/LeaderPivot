@@ -25,8 +25,8 @@ namespace ConsoleDemo
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
             bool displayGrandTotals = true;
             Matrix<SalesData> matrix = new Matrix<SalesData>(salesData, dimensions, measures, displayGrandTotals);
-            Vector<SalesData> plane = matrix.GetVector();
-            DisplayGraph(plane);
+            Vector<SalesData> vector = matrix.GetVector();
+            DisplayGraph(vector);
             Console.ReadKey();
         }
 
