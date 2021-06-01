@@ -12,6 +12,7 @@ namespace LeaderPivot
         public bool DisplayTotals { get; set; }
         public bool IsLeafNode { get; set; }
         public object Value { get; set; }
+        public CellType CellType { get; set; }
         private bool IsHeader { get; set; }
         private bool DisplayGrandTotals { get; set; }
         public string ColumnKey { get; set; }
@@ -54,7 +55,7 @@ namespace LeaderPivot
                     child = parent;
                 else
                 {
-                    child = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = isLeafNode, Value = FormattedCellValue(template, grp.First(), false) };
+                    child = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = isLeafNode, Value = FormattedCellValue(template, grp.First(), false), CellType = CellType.GroupHeader };
                     parent.Children.Add(child);
                 }
 
@@ -69,13 +70,16 @@ namespace LeaderPivot
                             if (IsHeader)
                                 CreateMeasureHeaders(parent, measures, path);
                             else
-                                CreateMeasures(parent, measures, template, grp, path);
+                            {
+                                CellType cellType = parent.CellType == CellType.GroupHeader ? CellType.Total : CellType.GrandTotal;
+                                CreateMeasures(parent, measures, template, grp, path, cellType);
+                            }
                         }
                         else if (IsHeader || childTemplates.Any(x => x.IsRow)) 
                         {
                             // Don't create a total row for a leaf row.  A leaf row may not be a truly leaf vector - it will have child vectors
                             // but they are columns.  Leaf columns are true leaf nodes. 
-                            Vector<T> totals = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = isLeafNode, Value = FormattedCellValue(template,grp.First(), true) };
+                            Vector<T> totals = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = isLeafNode, Value = FormattedCellValue(template,grp.First(), true), CellType = CellType.TotalHeader };
                             parent.Children.Add(totals);
                             
                             if(IsHeader)
@@ -86,21 +90,24 @@ namespace LeaderPivot
                     }
                     
                     if (DisplayGrandTotals && !IsHeader && template.IsRow && ! childTemplates.Any(x => x.IsRow))
-                        CreateMeasures(child, measures, template, grp, path);
+                        CreateMeasures(child, measures, template, grp, path, CellType.GrandTotal);
                 }
                 else
                 {
                     if (IsHeader)
                         CreateMeasureHeaders(child, measures, path);
                     else
-                        CreateMeasures(child, measures, template, grp, path);
+                    {
+                        CellType cellType = child.CellType == CellType.GroupHeader ? CellType.Measure : child.CellType == CellType.TotalHeader ? CellType.Total : CellType.GrandTotal;
+                        CreateMeasures(child, measures, template, grp, path, cellType);
+                    }
                 }
             }
 
 
             if (DisplayGrandTotals && level == 0)
             {
-                Vector<T> grandTotal = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = isLeafNode, Value = "Grand Total" };
+                Vector<T> grandTotal = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = isLeafNode, Value = "Grand Total", CellType = CellType.GrandTotalHeader };
                 parent.Children.Add(grandTotal);
 
                 if (IsHeader)
@@ -110,12 +117,12 @@ namespace LeaderPivot
             }
         }
 
-        private void CreateMeasures(Vector<T> vector, IEnumerable<Measure<T>> measures, Dimension<T> template, IEnumerable<T> grp, string columnKey)
+        private void CreateMeasures(Vector<T> vector, IEnumerable<Measure<T>> measures, Dimension<T> template, IEnumerable<T> grp, string columnKey, CellType cellType)
         {
             foreach (Measure<T> measure in measures)
             {
                 decimal value = measure.Aggragate(grp);
-                Vector<T> measureChild = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = true, ColumnKey = columnKey + measure.Header };
+                Vector<T> measureChild = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = true, ColumnKey = columnKey + measure.Header, CellType = cellType };
                 measureChild.Value = string.IsNullOrEmpty(measure.Format) ? value : String.Format(measure.Format, value);
                 vector.Children.Add(measureChild);
             }
@@ -126,7 +133,7 @@ namespace LeaderPivot
             // Measure headers are always expanded and are always displayed as column headers - never as row headers.
             foreach (Measure<T> measure in measures)
             {
-                Vector<T> measureHeader = new Vector<T> { IsExpanded = true, IsRow = false, IsLeafNode = true, Value = measure.Header, ColumnKey = columnKey + measure.Header };
+                Vector<T> measureHeader = new Vector<T> { IsExpanded = true, IsRow = false, IsLeafNode = true, Value = measure.Header, ColumnKey = columnKey + measure.Header, CellType = CellType.MeasureHeader };
                 vector.Children.Add(measureHeader);
             }
         }

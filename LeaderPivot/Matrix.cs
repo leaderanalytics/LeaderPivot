@@ -26,9 +26,10 @@ namespace LeaderPivot
 
         public Table BuildTable(Vector<T> vector)
         {
+            
             Table t = new Table();
             Vector<T> columnHeaders = new Vector<T>(data, dimensions.Where(x => !x.IsRow), measures, DisplayGrandTotals, true);
-            BuildColumnHeaders(columnHeaders, t, 0);
+            BuildColumnHeaders(columnHeaders, t, 0, 0);
 
             foreach (Vector<T> child in vector.Children)
                 BuildTableBody(child, t, null);
@@ -36,16 +37,18 @@ namespace LeaderPivot
             return t;
         }
 
-        private void BuildColumnHeaders(Vector<T> vector, Table t, int index)
+        private void BuildColumnHeaders(Vector<T> vector, Table t, int index, int totalWidth)
         {
             if (index == 0)
             {
+                totalWidth = GetColumnHeaderCount(vector, 0);
                 // 1.) Add an empty cell at 0,0 that spans row headers in width and column headers in height
                 // 2.) Add rows to accommodate the rest of the column headers
 
                 // Count the number of expanded column dimensions.  This sets the height of the cell at 0,0.
                 // Add one for row zero which will display sort buttons for column dimensions
                 int rowsSpan = GetHeaderDepth(vector, false, 0) + 1;
+                
 
                 // We cant set the width of the cell at 0,0 because we don't have row data.
                 int columnSpan = 1;
@@ -55,21 +58,25 @@ namespace LeaderPivot
                 row.Cells.Add(new Cell(null, rowsSpan, columnSpan));
                 t.Rows.Add(row);
 
-                // Add a second cell to row zero that is as wid as the number of leaf node columns in vector.
-                int z = GetColumnHeaderCount(vector, 0);
+                // Add a second cell to row zero that is as wide as the number of leaf node columns in vector.
 
-                row.Cells.Add(new Cell(null, 1, z));
+                row.Cells.Add(new Cell(null, 1, totalWidth));
 
                 // Add remaining rows to display column headers.  We have already added one.
                 for (int i = 0; i < rowsSpan - 1; i++)
                     t.Rows.Add(new TableRow());
 
-                index = 1;
+                index = 1;  // Don't add any cells to row 0.
             }
 
 
-            foreach (Vector<T> child in vector.Children)
+            for(int i=0;i<vector.Children.Count;i++)
             {
+                Vector<T> child = vector.Children[i];
+
+                if (child.IsExpanded)
+                    BuildColumnHeaders(child, t, index + 1, totalWidth);
+
                 TableRow row = t.Rows[index];
                 int headerDepth = GetHeaderDepth(child, false, 0);
                 row.Cells.Add(new Cell(child.Value, headerDepth, GetColumnHeaderCount(child, 0)));
@@ -77,8 +84,6 @@ namespace LeaderPivot
                 //if (child.DisplayTotals && child.IsExpanded && !child.IsLeafNode)
                 //    row.Cells.Add(new Cell(child.Value + " Total", headerDepth, measures.Count()));
 
-                if (child.IsExpanded)
-                    BuildColumnHeaders(child, t, index + 1);
             }
 
             //if (index == 1 && DisplayGrandTotals)
