@@ -22,7 +22,7 @@ namespace LeaderPivot
 
         public Vector<T> GetVector()
         {
-            return new Vector<T>(data, dimensions, measures, DisplayGrandTotals);
+            return new Vector<T>(data, dimensions, measures, DisplayGrandTotals) { CellType = CellType.Root };
         }
 
         public Table BuildTable(Vector<T> vector)
@@ -98,7 +98,8 @@ namespace LeaderPivot
             if (rowSpan > 1)
                 rowIndex = rowIndex - (rowSpan - 1);
 
-            t.Rows[rowIndex].Cells.Add(new Cell(vector.Value, rowSpan, colSpan));
+            if(vector.CellType != CellType.Root)
+                t.Rows[rowIndex].Cells.Add(new Cell(vector.Value, rowSpan, colSpan));
         }
 
         // Finds the dimension (row or column) that has the greatest number of expanded levels.

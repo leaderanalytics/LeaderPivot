@@ -8,6 +8,7 @@ namespace LeaderPivot
 {
     public enum CellType
     {
+        Root,
         Measure,
         Total,
         GrandTotal,
