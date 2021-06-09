@@ -375,7 +375,7 @@ namespace TestData
                 new SalesData {Product = "KVM Switch", Quantity = 33, UnitPrice = 15, Country = "Canada", State = "QU", City = "Ottawa", Year = "2020", Quarter = "3", Month = "Sept" },
 
                 new SalesData {Product = "KVM Switch", Quantity = 75, UnitPrice = 13, Country = "Canada", State = "QU", City = "Ottawa", Year = "2020", Quarter = "4", Month = "Nov" },
-                new SalesData {Product = "KVM Switch", Quantity = 92, UnitPrice = 15, Country = "Canada", State = "QU", City = "Ottawa", Year = "2020", Quarter = "4", Month = "Dec" }
+                new SalesData {Product = "KVM Switch", Quantity = 92, UnitPrice = 15, Country = "Canada", State = "QU", City = "Ottawa", Year = "2021", Quarter = "4", Month = "Dec" }
 
             };
         }

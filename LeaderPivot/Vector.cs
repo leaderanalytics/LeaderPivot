@@ -90,7 +90,7 @@ namespace LeaderPivot
                     }
                     
                     if (DisplayGrandTotals && !IsHeader && template.IsRow && ! childTemplates.Any(x => x.IsRow))
-                        CreateMeasures(child, measures, template, grp, path, CellType.GrandTotal);
+                        CreateMeasures(child, measures, template, grp, rootPath, CellType.GrandTotal);
                 }
                 else
                 {
@@ -111,7 +111,7 @@ namespace LeaderPivot
                 parent.Children.Add(grandTotal);
 
                 if (IsHeader)
-                    CreateMeasureHeaders(grandTotal, measures, path);
+                    CreateMeasureHeaders(grandTotal, measures, rootPath);
                 else
                     Build(grandTotal, data, childTemplates.Where(x => !x.IsRow), measures, path, level + 1);
             }
@@ -122,7 +122,7 @@ namespace LeaderPivot
             foreach (Measure<T> measure in measures)
             {
                 decimal value = measure.Aggragate(grp);
-                Vector<T> measureChild = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = true, ColumnKey = columnKey + measure.Header, CellType = cellType };
+                Vector<T> measureChild = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = false, IsLeafNode = true, ColumnKey = columnKey + measure.Header, CellType = cellType };
                 measureChild.Value = string.IsNullOrEmpty(measure.Format) ? value : String.Format(measure.Format, value);
                 vector.Children.Add(measureChild);
             }

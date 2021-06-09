@@ -10,7 +10,9 @@ namespace LeaderPivot
         protected IEnumerable<Dimension<T>> dimensions;
         protected IEnumerable<Measure<T>> measures;
         protected bool DisplayGrandTotals;
-        private int headerHeight; // Total height of header rows including one topmost empty row and measure headers.
+        private int headerHeight;   // Total number of column header rows including one topmost empty row. Also includes measure headers.
+        private int headerWidth;    // Total number of row header columns   
+        private Dictionary<string, int> ColumnIndexDict;
 
         public Matrix(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
         {
@@ -18,6 +20,7 @@ namespace LeaderPivot
             this.dimensions = dimensions.OrderBy(x => !x.IsRow).ThenBy(x => x.Sequence);
             this.measures = measures;
             this.DisplayGrandTotals = displayGrandTotals;
+            ColumnIndexDict = new Dictionary<string, int>();
         }
 
         public Vector<T> GetVector()
@@ -27,13 +30,12 @@ namespace LeaderPivot
 
         public Table BuildTable(Vector<T> vector)
         {
-            
             Table t = new Table();
             Vector<T> columnHeaders = new Vector<T>(data, dimensions.Where(x => !x.IsRow), measures, DisplayGrandTotals, true);
             BuildColumnHeaders(columnHeaders, t, 0, 0);
-
-            foreach (Vector<T> child in vector.Children)
-                BuildTableBody(child, t, null);
+            BuildRows(vector, t, 0, 0);
+            //foreach (Vector<T> child in vector.Children)
+            //    BuildTableBody(child, t, null);
 
             return t;
         }
@@ -42,8 +44,7 @@ namespace LeaderPivot
         {
             if (index == 0)
             {
-                vector.Value = "***";
-                int totalWidth = GetColumnHeaderCount(vector, 0);
+                int totalWidth = GetLeafNodeCount(vector, false, 0);
                 // 1.) Add an empty cell at 0,0 that spans row headers in width and column headers in height
                 // 2.) Add rows to accommodate the rest of the column headers
 
@@ -78,28 +79,86 @@ namespace LeaderPivot
             foreach (Vector<T> child in vector.Children)
                 tmpHeaderDepth = Math.Max(tmpHeaderDepth, GetHeaderDepth(vector, false, 0));
 
-
             foreach (Vector<T> child in vector.Children)
                 if (child.IsExpanded)
                     BuildColumnHeaders(child, t, index + 1, tmpHeaderDepth);
-
            
             int headerDepth = GetHeaderDepth(vector, false, 0);
             int rowSpan = 1;
             int colSpan = 1;
+            int rowIndex = headerHeight - headerDepth;
 
             if (vector.CellType != CellType.MeasureHeader)
             {
                 rowSpan = peerDepth - headerDepth;
-                colSpan = GetColumnHeaderCount(vector, 0);
+                colSpan = GetLeafNodeCount(vector, false, 0);
             }
-            int rowIndex = headerHeight - headerDepth;
+            else
+                ColumnIndexDict.Add(vector.ColumnKey, t.Rows[rowIndex].Cells.Count);
 
             if (rowSpan > 1)
                 rowIndex = rowIndex - (rowSpan - 1);
 
             if(vector.CellType != CellType.Root)
                 t.Rows[rowIndex].Cells.Add(new Cell(vector.Value, rowSpan, colSpan));
+        }
+
+        private void BuildRows(Vector<T> vector, Table t, int index, int peerDepth)
+        {
+            
+            if (index == 0)
+            {
+                headerWidth = GetHeaderDepth(vector, true, 0) - 1;
+                t.Rows[0].Cells[0].ColSpan = headerWidth;
+                t.Rows.Add(new TableRow());
+                index = 1;
+            }
+
+            int rowIndex = t.Rows.Count - 1;
+            int rowSpan = 1;
+            int colSpan = 1;
+
+            if (vector.IsRow)
+            {
+                if (vector.IsExpanded && vector.CellType != CellType.TotalHeader && vector.CellType != CellType.GrandTotalHeader)
+                {
+                    rowSpan = Math.Max(GetLeafNodeCount(vector, true, 0),1);
+                }
+                else if(vector.CellType == CellType.TotalHeader || vector.CellType == CellType.GrandTotalHeader)
+                {
+                    colSpan = headerWidth - peerDepth + 1;
+                }
+
+                if (vector.CellType != CellType.Root)
+                    t.Rows[rowIndex].Cells.Add(new Cell(vector.Value, rowSpan, colSpan));
+            }
+            
+            // Render measure cells
+            rowSpan = colSpan = 1;
+            int colIndex = 0;  // Where the column should be
+            int colCount = 0;  // Ordinal position.  If less than colIndex, insert dummy cells
+            IEnumerable<Vector<T>> columnData = vector.Children.Where(x => !x.IsRow);
+            
+            if (columnData.Any())
+            {
+                foreach (Vector<T> child in columnData)
+                {
+                    colIndex = ColumnIndexDict[child.ColumnKey];
+
+                    while (colCount < colIndex)
+                    {
+                        t.Rows[rowIndex].Cells.Add(new Cell(string.Empty, rowSpan, colSpan));
+                        colCount++;
+                    }
+                    t.Rows[rowIndex].Cells.Add(new Cell(child.Value, rowSpan, colSpan));
+                    colCount++;
+                }
+                
+                t.Rows.Add(new TableRow());
+            }
+
+            foreach (Vector<T> child in vector.Children.Where(x => x.IsRow))
+                BuildRows(child, t, ++index, peerDepth + 1);
         }
 
         // Finds the dimension (row or column) that has the greatest number of expanded levels.
@@ -113,18 +172,19 @@ namespace LeaderPivot
             return Math.Max(maxDepth, tmp);
         }
 
-        // Returns the total number of cells required to display column headers for both collapsed and expanded dimensions.
-        private int GetColumnHeaderCount(Vector<T> vector, int count)
+        // Counts the number of leaf nodes at all levels
+        private int GetLeafNodeCount(Vector<T> vector, bool checkRows, int count)
         {
             int tmp = 0;
 
             foreach (Vector<T> child in vector.Children)
-                tmp += GetColumnHeaderCount(child, count);
-            
-            
-            if (!vector.IsRow)
-                count = vector.IsExpanded ? (vector.Children.Count == 0 ? 1 : 0) : 1;
-            
+                tmp += GetLeafNodeCount(child, checkRows, count);
+
+            // if the node is not expanded, or has no children of the specified axis it is a leaf node.
+            if ((checkRows && vector.IsRow) || (!checkRows && !vector.IsRow))
+                if (!vector.IsExpanded || !vector.Children.Any(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)))
+                    count = 1;
+
             return count + tmp;
         }
 
