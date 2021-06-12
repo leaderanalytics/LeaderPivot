@@ -71,7 +71,7 @@ namespace LeaderPivot
                                 CreateMeasureHeaders(parent, measures, path);
                             else
                             {
-                                CellType cellType = parent.CellType == CellType.GroupHeader ? CellType.Total : CellType.GrandTotal;
+                                CellType cellType = (parent.CellType == CellType.GroupHeader || parent.CellType == CellType.TotalHeader) ? CellType.Total : CellType.GrandTotal;
                                 CreateMeasures(parent, measures, template, grp, path, cellType);
                             }
                         }
