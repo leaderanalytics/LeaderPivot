@@ -10,8 +10,4 @@
     <ProjectReference Include="..\TestData\TestData.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Diagnostics\Obsolete as of 2021-06-18\" />
-  </ItemGroup>
-
 </Project>

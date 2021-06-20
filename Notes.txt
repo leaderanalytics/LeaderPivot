@@ -1,0 +1,9 @@
+6/20/2021 Finished first version of Vector and matrix builder
+Todo
+Rename Vector to Node
+Remove DisplayTotals property
+Factor out NodeBuilder
+Factor out MatrixBuilder
+Document code
+Add expand/collapse buttons to web UI
+Implement expand/collapse logic
