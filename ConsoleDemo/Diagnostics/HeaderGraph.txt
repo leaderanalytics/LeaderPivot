@@ -1,0 +1,58 @@
+                                 Root
+*  Year: 2020                            GroupHeader
+**  Quarter: 1                           GroupHeader
+***  Feb                                 GroupHeader
+****  Quantity           20201FebQuantity                MeasureHeader
+****  Revenue            20201FebRevenue                 MeasureHeader
+****  Count              20201FebCount           MeasureHeader
+***  Jan                                 GroupHeader
+****  Quantity           20201JanQuantity                MeasureHeader
+****  Revenue            20201JanRevenue                 MeasureHeader
+****  Count              20201JanCount           MeasureHeader
+**  Quarter: 1 Total                             TotalHeader
+***  Quantity            20201Quantity           MeasureHeader
+***  Revenue             20201Revenue            MeasureHeader
+***  Count               20201Count              MeasureHeader
+**  Quarter: 2                           GroupHeader
+***  Apr                                 GroupHeader
+****  Quantity           20202AprQuantity                MeasureHeader
+****  Revenue            20202AprRevenue                 MeasureHeader
+****  Count              20202AprCount           MeasureHeader
+***  May                                 GroupHeader
+****  Quantity           20202MayQuantity                MeasureHeader
+****  Revenue            20202MayRevenue                 MeasureHeader
+****  Count              20202MayCount           MeasureHeader
+**  Quarter: 2 Total                             TotalHeader
+***  Quantity            20202Quantity           MeasureHeader
+***  Revenue             20202Revenue            MeasureHeader
+***  Count               20202Count              MeasureHeader
+**  Quarter: 3                           GroupHeader
+***  Sept                                GroupHeader
+****  Quantity           20203SeptQuantity               MeasureHeader
+****  Revenue            20203SeptRevenue                MeasureHeader
+****  Count              20203SeptCount          MeasureHeader
+**  Quarter: 3 Total                             TotalHeader
+***  Quantity            20203Quantity           MeasureHeader
+***  Revenue             20203Revenue            MeasureHeader
+***  Count               20203Count              MeasureHeader
+**  Quarter: 4                           GroupHeader
+***  Dec                                 GroupHeader
+****  Quantity           20204DecQuantity                MeasureHeader
+****  Revenue            20204DecRevenue                 MeasureHeader
+****  Count              20204DecCount           MeasureHeader
+***  Nov                                 GroupHeader
+****  Quantity           20204NovQuantity                MeasureHeader
+****  Revenue            20204NovRevenue                 MeasureHeader
+****  Count              20204NovCount           MeasureHeader
+**  Quarter: 4 Total                             TotalHeader
+***  Quantity            20204Quantity           MeasureHeader
+***  Revenue             20204Revenue            MeasureHeader
+***  Count               20204Count              MeasureHeader
+*  Year: 2020 Total                              TotalHeader
+**  Quantity             2020Quantity            MeasureHeader
+**  Revenue              2020Revenue             MeasureHeader
+**  Count                2020Count               MeasureHeader
+*  Grand Total                           GrandTotalHeader
+**  Quantity             Quantity                MeasureHeader
+**  Revenue              Revenue                 MeasureHeader
+**  Count                Count           MeasureHeader

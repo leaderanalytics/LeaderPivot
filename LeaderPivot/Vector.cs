@@ -29,21 +29,21 @@ namespace LeaderPivot
         {
             IsHeader = isHeader;
             DisplayGrandTotals = displayGrandTotals;
-            Build(this, data, dimensions, measures, string.Empty, false);
+            Build(this, data, dimensions, measures, string.Empty);
         }
 
         protected Vector() => Children = new List<Vector<T>>();
 
 
-        protected virtual void Build(Vector<T> parent, IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, string rootPath, bool isTotalsRow)
+        protected virtual void Build(Vector<T> parent, IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, string rootPath)
         {
             var template = dimensions.First();
             var childTemplates = dimensions.Skip(1);
             bool isLeafNode = !childTemplates.Any();
             IsExpanded = template.IsExpanded;
             DisplayTotals = template.DisplayTotals;
-
-            if (rootPath == null)
+            
+            if (rootPath is null)
                 rootPath = string.Empty;
 
             string path = rootPath;
@@ -57,61 +57,61 @@ namespace LeaderPivot
             {
                 string grpKeyValue = grp.Key.ToString();
                 path = template.IsRow ? rootPath : rootPath + grpKeyValue;
-                Vector<T> child = (template.IsRow || IsHeader || isTotalsRow) ? null : parent;
+                Vector<T> child = (template.IsRow || IsHeader) ? null : parent;
 
                 if (child == null)
                 {
                     // Child will be null if template is a row.
-                    CellType childCellType = parent.CellType == CellType.Root ? CellType.GrandTotalHeader : isTotalsRow ? CellType.TotalHeader : CellType.GroupHeader;
-                    string headerValue = isTotalsRow ? (parent.Value ?? "Grand") + " Total" : FormattedCellValue(template, grp.First());
+                    CellType childCellType = CellType.GroupHeader;
+                    string headerValue = FormattedCellValue(template, grp.First());
                     child = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = isLeafNode, Value = headerValue, CellType = childCellType };
                     parent.Children.Add(child);
                 }
 
                 if (!isLeafNode)  // isLeafNode and templateIsRow cannot both be true at the same time.
-                    Build(child, grp, childTemplates, measures, path, false);
+                    Build(child, grp, childTemplates, measures, path);
 
-                if (!childTemplates.Any(x => x.IsRow)) // Only create measures on leaf node rows.  Totals rows are created outside this loop.
+                if ((IsHeader && isLeafNode) || (!IsHeader && !childTemplates.Any(x => x.IsRow)))
                 {
+                    // Create measures on leaf nodes
+
                     if (IsHeader)
-                    {
-                        if(isLeafNode)
-                            CreateMeasureHeaders(child, measures, path);
-                    }
+                        CreateMeasureHeaders(child, measures, path);
                     else
                     {
-                        // Child will be null if IsHeader and isLeafNode are true
-                        CellType cellType = isLeafNode ? CellType.Measure : template.IsRow ? CellType.GrandTotal : CellType.Total;
+                        CellType cellType =(isLeafNode && child.CellType == CellType.GroupHeader) ? CellType.Measure : child.CellType == CellType.GrandTotalHeader ? CellType.GrandTotal: CellType.Total;
                         CreateMeasures(child, measures, template, grp, path, cellType); // Build Column measures, totals and grand totals
                     }
                 }
+                else if (template.IsRow || IsHeader)
+                    CreateTotals(parent, measures, dimensions, grp, path, CellType.TotalHeader);
             }
 
-
-            if (template.DisplayTotals && (template.IsRow || IsHeader))
-            {
-                // Create Totals Row / Column
-                
-
-                if (IsHeader)
-                {
-                    CellType cellType = parent.Value == null ? CellType.GrandTotalHeader : CellType.TotalHeader;
-                    parent.Children.Add(new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = isLeafNode, Value = (parent.Value ?? "Grand") + " Total", CellType = cellType });
-                    CreateMeasureHeaders(parent.Children.Last(), measures, rootPath);
-                }
-                else
-                {
-                    Build(parent, data, childTemplates.Where(x => !x.IsRow), measures, path, true);
-                    CreateMeasures(parent.Children.Last(), measures, template, data, path, CellType.GrandTotal);
-                }  
-                
-            }
+            if (parent.CellType == CellType.Root && parent.DisplayGrandTotals)
+                CreateTotals(parent, measures, dimensions, data, rootPath, CellType.GrandTotalHeader);
         }
 
+
+        private void CreateTotals(Vector<T> vector, IEnumerable<Measure<T>> measures, IEnumerable<Dimension<T>> templates, IEnumerable<T> grp, string columnKey, CellType cellType)
+        {
+            Dimension<T> template = templates.First();
+            Vector<T> total = new Vector<T> { IsExpanded = template.IsExpanded, IsRow = template.IsRow, IsLeafNode = false, CellType = cellType };
+            total.Value = (cellType == CellType.TotalHeader ? FormattedCellValue(template, grp.First()) : "Grand") + " Total";
+            vector.Children.Add(total);
+
+            if (IsHeader)
+                CreateMeasureHeaders(total, measures, columnKey);
+            else
+            {
+                Build(total, grp, templates.Skip(1).Where(x => !x.IsRow), measures, columnKey);
+                CreateMeasures(total, measures, template, grp, columnKey, CellType.GrandTotal);
+            }
+        }
         
 
         private void CreateMeasures(Vector<T> vector, IEnumerable<Measure<T>> measures, Dimension<T> template, IEnumerable<T> grp, string columnKey, CellType cellType)
         {
+            // Measure are always leaf node columns.
             foreach (Measure<T> measure in measures)
             {
                 decimal value = measure.Aggragate(grp);
