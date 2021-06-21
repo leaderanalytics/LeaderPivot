@@ -13,9 +13,8 @@ This library creates a pivot grid using a three step approach:
 6/20/2021 Finished first version of Vector and matrix builder
 Todo
 
-Document code
-Finish test data spreadsheet
-Add expand/collapse buttons to web UI
+
+Add expand/collapse buttons to blazor UI
 Implement expand/collapse logic
 Test displayGrandTotals
 Test with nullable measures

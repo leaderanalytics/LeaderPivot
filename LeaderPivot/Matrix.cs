@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LeaderPivot
+namespace LeaderAnalytics.LeaderPivot
 {
     /// <summary>
     /// Represents a rectangular data structure.  Difference between a matrix and a table

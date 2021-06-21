@@ -1,7 +1,42 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Authors>Leader Analytics</Authors>
+    <Company>Leader Analytics</Company>
+    <Product>LeaderAnalytics.LeaderPivot</Product>
+    <Description>Pivot table</Description>
+    <Copyright>2021 Leader Analytics</Copyright>
+    <PackageProjectUrl>https://github.com/leaderanalytics/LeaderPivot</PackageProjectUrl>
+    <PackageIcon>logo-xsmall.png</PackageIcon>
+    <RepositoryUrl>https://github.com/leaderanalytics/LeaderPivot</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Leader Analytics LeaderAnalytics Pivot Table Matrix</PackageTags>
+    <PackageReleaseNotes>See Repository</PackageReleaseNotes>
+    <Version>1.0.0-beta.1</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <PackageId>LeaderAnalytics.LeaderPivot</PackageId>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <RootNamespace>LeaderAnalytics.LeaderPivot</RootNamespace>
+    <AssemblyName>LeaderAnalytics.LeaderPivot</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\logo-xsmall.png" Pack="true" PackagePath="\" />
+    <None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Copy
+      SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg"
+      DestinationFolder="c:\NugetPackages\"
+    />
+  </Target>
 </Project>

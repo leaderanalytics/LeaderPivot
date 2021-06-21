@@ -1,4 +1,4 @@
-﻿using LeaderPivot;
+﻿using LeaderAnalytics.LeaderPivot;
 using System.Collections.Generic;
 using System.Linq;
 

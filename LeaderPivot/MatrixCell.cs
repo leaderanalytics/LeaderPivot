@@ -1,5 +1,5 @@
 ﻿
-namespace LeaderPivot
+namespace LeaderAnalytics.LeaderPivot
 {
     /// <summary>
     /// Represents a single value in a rectangular matrix.

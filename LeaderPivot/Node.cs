@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LeaderPivot
+namespace LeaderAnalytics.LeaderPivot
 {
     /// <summary>
     /// Represents an element in a hierarchical data structure

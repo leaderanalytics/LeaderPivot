@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LeaderPivot
+namespace LeaderAnalytics.LeaderPivot
 {
     /// <summary>
     /// Used in the creation of both Nodes and Matrices. 

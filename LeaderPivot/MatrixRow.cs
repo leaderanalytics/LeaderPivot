@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LeaderPivot
+namespace LeaderAnalytics.LeaderPivot
 {
     /// <summary>
     /// A row on a matrix.  A row has a theoretically unlimited number of columns.

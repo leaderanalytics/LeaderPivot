@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LeaderPivot
+namespace LeaderAnalytics.LeaderPivot
 {
     public class Dimension<T>
     {

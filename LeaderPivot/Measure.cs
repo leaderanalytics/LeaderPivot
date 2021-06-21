@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace LeaderPivot
+namespace LeaderAnalytics.LeaderPivot
 {
     public class Measure<T>
     {

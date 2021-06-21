@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace LeaderPivot
+namespace LeaderAnalytics.LeaderPivot
 {
     public class NodeBuilder<T>
     {

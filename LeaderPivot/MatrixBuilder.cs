@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LeaderPivot
+namespace LeaderAnalytics.LeaderPivot
 {
     public class MatrixBuilder<T>
     {
