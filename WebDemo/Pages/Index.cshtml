@@ -7,10 +7,10 @@
 
 <div class="text-center">
     <table class="table-bordered table">
-        @foreach (TableRow tr in Model.table.Rows)
+        @foreach (MatrixRow tr in Model.table.Rows)
         {
             <tr>
-                @foreach (Cell c in tr.Cells)
+                @foreach (MatrixCell c in tr.Cells)
                 { 
                     <td rowspan="@c.RowSpan" colspan="@c.ColSpan">@c.Value</td>
                 }

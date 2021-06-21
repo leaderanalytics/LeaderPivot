@@ -22,6 +22,8 @@ namespace TestData
 
     public class SalesDataService
     {
+        private string[] Months = new string[12] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec",};
+
         public List<Dimension<SalesData>> LoadSalesDataDimensions()
         {
             // Must have at least one row and at least one column dimension
@@ -31,88 +33,75 @@ namespace TestData
                 // Rows
                 new Dimension<SalesData>
                 {
-                    Group = x => x.Product,
-                    LeafNodeValue = x => x.Product,
+                    GroupValue = x => x.Product,
+                    HeaderValue = x => x.Product,
                     IsRow = true,
                     IsExpanded = true,
                     Sequence = 0,
-                    Format = null,
-                    DisplayTotals = true,
                     IsAscending = true
                 },
 
                 new Dimension<SalesData>
                 {
-                    Group = x => x.Country,
-                    LeafNodeValue = x => x.Country,
+                    GroupValue = x => x.Country,
+                    HeaderValue = x => x.Country,
                     IsRow = true,
                     IsExpanded = true,
                     Sequence = 1,
-                    Format = null,
-                    DisplayTotals = true,
                     IsAscending = true
                 },
 
 
                 new Dimension<SalesData>
                 {
-                    Group = x => x.State,
-                    LeafNodeValue = x => x.State,
+                    GroupValue = x => x.State,
+                    HeaderValue = x => x.State,
                     IsRow = true,
                     IsExpanded = true,
                     Sequence = 2,
-                    Format = null,
-                    DisplayTotals = true,
                     IsAscending = true
                 },
 
 
                 new Dimension<SalesData>
                 {
-                    Group = x => x.City,
-                    LeafNodeValue = x => x.City,
+                    GroupValue = x => x.City,
+                    HeaderValue = x => x.City,
                     IsRow = true,
                     IsExpanded = true,
                     Sequence = 3,
-                    Format = null,
-                    DisplayTotals = true,
                     IsAscending = true
                 },
 
                 // Columns
                 new Dimension<SalesData>
                 {
-                    Group = x => x.Year,
-                    LeafNodeValue = x => x.Year,
+                    GroupValue = x => x.Year,
+                    HeaderValue = x => $"Year: {x.Year}",
                     IsRow = false,
                     IsExpanded = true,
                     Sequence = 0,
-                    Format = "Year: {0}",
-                    DisplayTotals = true,
                     IsAscending = true
                 },
 
                 new Dimension<SalesData>
                 {
-                    Group = x => x.Quarter,
-                    LeafNodeValue = x => x.Quarter,
+                    GroupValue = x => x.Quarter,
+                    HeaderValue = x => $"Quarter: {x.Quarter}",
                     IsRow = false,
                     IsExpanded = true,
                     Sequence = 1,
-                    Format = "Quarter: {0}",
-                    DisplayTotals = true,
                     IsAscending = true
                 },
 
                 new Dimension<SalesData>
                 {
-                    Group = x => x.Month,
-                    LeafNodeValue = x => x.Month,
+                    GroupValue = x => x.Month,
+                    HeaderValue = x => x.Month,
+                    SortValue = x => System.Array.IndexOf(Months, x).ToString(),
                     IsRow = false,
                     IsExpanded = true,
                     Sequence = 2,
-                    Format = null,
-                    DisplayTotals = true,
                     IsAscending = true
                 }
             };

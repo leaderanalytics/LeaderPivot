@@ -8,11 +8,13 @@ namespace ConsoleDemo
 {
     class Program
     {
+        private static NodeBuilder<SalesData> nodeBuilder;
+
         static void Main(string[] args)
         {
+            nodeBuilder = new NodeBuilder<SalesData>();
             DisplaySalesDataDataGraph();
             DisplaySalesDataHeaderGraph();
-               
         }
 
 
@@ -24,9 +26,8 @@ namespace ConsoleDemo
             List<Dimension<SalesData>> dimensions = salesDataService.LoadSalesDataDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
             bool displayGrandTotals = true;
-            Matrix<SalesData> matrix = new Matrix<SalesData>(salesData, dimensions, measures, displayGrandTotals);
-            Vector<SalesData> vector = matrix.GetVector();
-            DisplayGraph(vector);
+            Node<SalesData> dataNode = nodeBuilder.Build(salesData, dimensions, measures, displayGrandTotals);
+            DisplayGraph(dataNode);
             Console.ReadKey();
         }
 
@@ -38,13 +39,12 @@ namespace ConsoleDemo
             List<Dimension<SalesData>> dimensions = salesDataService.LoadSalesDataDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
             bool displayGrandTotals = true;
-            Matrix<SalesData> matrix = new Matrix<SalesData>(salesData, dimensions, measures, displayGrandTotals);
-            Vector<SalesData> columnHeaders = new Vector<SalesData>(salesData, dimensions.Where(x => !x.IsRow), measures, displayGrandTotals, true);
-            DisplayGraph(columnHeaders);
+            Node<SalesData> columnHeaderNode = nodeBuilder.BuildColumnHeaders(salesData, dimensions, measures, displayGrandTotals);
+            DisplayGraph(columnHeaderNode);
             Console.ReadKey();
         }
 
-        static void DisplayGraph(Vector<SalesData> v)
+        static void DisplayGraph(Node<SalesData> v)
         {
             Console.Clear();
             _DisplayGraph(v, 0);
@@ -52,11 +52,11 @@ namespace ConsoleDemo
         }
 
 
-        static void _DisplayGraph(Vector<SalesData> v, int level)
+        static void _DisplayGraph(Node<SalesData> v, int level)
         {
-            Console.WriteLine(new String('*', level) + "  " + v.Value + "\t\t " + v.ColumnKey + "\t\t " + v.CellType.ToString());
+            Console.WriteLine(new String('*', level) + "  " + v.Value + "\t\t " + v.CellKey + "\t\t " + v.CellType.ToString());
 
-            foreach (Vector<SalesData> c in v.Children)
+            foreach (Node<SalesData> c in v.Children)
                 _DisplayGraph(c, level + 1);
 
         }

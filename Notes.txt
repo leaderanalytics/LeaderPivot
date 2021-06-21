@@ -1,9 +1,23 @@
+6/20/2021
+This library creates a pivot grid using a three step approach:
+
+1.) A collection of data elements (tabular data) are passed to NodeBuilder. NodeBuilder groups the data and creates a hierarchical 
+    node object that includes totals.
+
+2.) The node object is passed to MatrixBuilder.  MatrixBuilder builds a matrix (grid with unbounded rows and columns).  Each cell in the matrix
+	has rowspan and columnspan properties so that the matrix can be rendered as a rectangle.
+
+3.) The matrix is passed to the UI which renders it.  Since the heavy lifting is done in steps 1 and 2 rendering the matrix is relatively simple.
+
+
 6/20/2021 Finished first version of Vector and matrix builder
 Todo
-Rename Vector to Node
-Remove DisplayTotals property
-Factor out NodeBuilder
-Factor out MatrixBuilder
+
 Document code
+Finish test data spreadsheet
 Add expand/collapse buttons to web UI
 Implement expand/collapse logic
+Test displayGrandTotals
+Test with nullable measures
+Test with percent-of-total as measure
+Test with Average as measure
