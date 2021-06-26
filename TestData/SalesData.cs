@@ -33,16 +33,18 @@ namespace TestData
                 // Rows
                 new Dimension<SalesData>
                 {
+                    DisplayValue = "Product Name",
                     GroupValue = x => x.Product,
                     HeaderValue = x => x.Product,
                     IsRow = true,
-                    IsExpanded = true,
+                    IsExpanded = false,
                     Sequence = 0,
                     IsAscending = true
                 },
 
                 new Dimension<SalesData>
                 {
+                    DisplayValue = "Country",
                     GroupValue = x => x.Country,
                     HeaderValue = x => x.Country,
                     IsRow = true,
@@ -54,6 +56,7 @@ namespace TestData
 
                 new Dimension<SalesData>
                 {
+                    DisplayValue = "State",
                     GroupValue = x => x.State,
                     HeaderValue = x => x.State,
                     IsRow = true,
@@ -65,6 +68,7 @@ namespace TestData
 
                 new Dimension<SalesData>
                 {
+                    DisplayValue = "City",
                     GroupValue = x => x.City,
                     HeaderValue = x => x.City,
                     IsRow = true,
@@ -76,16 +80,18 @@ namespace TestData
                 // Columns
                 new Dimension<SalesData>
                 {
+                    DisplayValue = "Year",
                     GroupValue = x => x.Year,
                     HeaderValue = x => $"Year: {x.Year}",
                     IsRow = false,
-                    IsExpanded = true,
+                    IsExpanded = false,
                     Sequence = 0,
                     IsAscending = true
                 },
 
                 new Dimension<SalesData>
                 {
+                    DisplayValue = "Quarter",
                     GroupValue = x => x.Quarter,
                     HeaderValue = x => $"Quarter: {x.Quarter}",
                     IsRow = false,
@@ -96,6 +102,7 @@ namespace TestData
 
                 new Dimension<SalesData>
                 {
+                    DisplayValue = "Month",
                     GroupValue = x => x.Month,
                     HeaderValue = x => x.Month,
                     SortValue = x => System.Array.IndexOf(Months, x).ToString(),
@@ -113,9 +120,9 @@ namespace TestData
         {
             List<Measure<SalesData>> measures = new List<Measure<SalesData>>
             {
-                new Measure<SalesData> { Aggragate = x => x.Sum(y => y.Quantity), Header = "Quantity" },
-                new Measure<SalesData> { Aggragate = x => x.Sum(y => y.Quantity * y.UnitPrice), Header = "Revenue" },
-                new Measure<SalesData> { Aggragate = x => x.Count(), Header = "Count" }
+                new Measure<SalesData> { Aggragate = x => x.Sum(y => y.Quantity), DisplayValue = "Quantity", Format="{0:n0}", Sequence = 2 },
+                new Measure<SalesData> { Aggragate = x => x.Sum(y => y.Quantity * y.UnitPrice), DisplayValue = "Revenue", Format="{0:C}", Sequence = 3 },
+                new Measure<SalesData> { Aggragate = x => x.Count(), DisplayValue = "Count", Format="{0:n0}", Sequence = 1}
             };
             return measures;
         }

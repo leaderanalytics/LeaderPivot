@@ -10,11 +10,16 @@ This library creates a pivot grid using a three step approach:
 3.) The matrix is passed to the UI which renders it.  Since the heavy lifting is done in steps 1 and 2 rendering the matrix is relatively simple.
 
 
-6/20/2021 Finished first version of Vector and matrix builder
-Todo
+6/20/2021 Finished first version of node and matrix builders
+
 
 
 Add expand/collapse buttons to blazor UI
+	Create _scss file in styles/components
+	Add import statement to mudblacor.scss
+	Define styles
+	Update components with new names
+
 Implement expand/collapse logic
 Test displayGrandTotals
 Test with nullable measures

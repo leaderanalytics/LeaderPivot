@@ -5,12 +5,18 @@ namespace LeaderAnalytics.LeaderPivot
     public class Dimension<T>
     {
         /// <summary>
+        /// A friendly value that identifies how the data will be grouped i.e. City, Product Name, etc.  This value is displayed on the button that allows the user to reposition the dimension.
+        /// This value is also used to uniquely identify the dimension.  DisplayValue can not be null and must be unique for each Dimension.
+        /// </summary>
+        public string DisplayValue { get; set; }
+
+        /// <summary>
         /// Function of T used to group the data.
         /// </summary>
         public Func<T, string> GroupValue { get; set; }              
 
         /// <summary>
-        /// Function of T used as a header value.  GroupValue is used if not set.
+        /// Function of T used to display a friendly row or column header value.  GroupValue is used if not set.
         /// </summary>
         public Func<T, string> HeaderValue { get; set; }
 
@@ -35,8 +41,23 @@ namespace LeaderAnalytics.LeaderPivot
         public bool IsAscending { get; set; }
 
         /// <summary>
-        /// Ordinal position of this dimension relative to others of axis (row or column).
+        /// Ordinal position of this dimension relative to others of same axis (row or column).
         /// </summary>
         public int Sequence { get; set; }
+
+        /// <summary>
+        /// If true, user will be allowed to toggle ascending / descending sorting.  Default value is true.
+        /// </summary>
+        public bool CanSort { get; set; } = true;
+
+        /// <summary>
+        /// If true, user can drag this dimension up or down the row or column hierarchy.  Default value is true.
+        /// </summary>
+        public bool CanReposition { get; set; } = true;
+
+        /// <summary>
+        /// If true, user can drag this dimension from row to column axis and vice versa.  Ignored if CanReposition is false.  Default value is true.
+        /// </summary>
+        public bool CanRepositionAcrossAxis { get; set; } = true;
     }
 }
