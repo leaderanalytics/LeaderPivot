@@ -26,6 +26,10 @@ namespace ConsoleDemo
             List<Dimension<SalesData>> dimensions = salesDataService.LoadSalesDataDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
             bool displayGrandTotals = true;
+            Validator<SalesData> validator = new Validator<SalesData>();
+            validator.Validate(salesData, dimensions, measures);
+            dimensions = validator.SortAndFilterDimensions(dimensions);
+            measures = validator.SortAndFilterMeasures(measures);
             Node<SalesData> dataNode = nodeBuilder.Build(salesData, dimensions, measures, displayGrandTotals);
             DisplayGraph(dataNode);
             Console.ReadKey();
@@ -39,6 +43,10 @@ namespace ConsoleDemo
             List<Dimension<SalesData>> dimensions = salesDataService.LoadSalesDataDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
             bool displayGrandTotals = true;
+            Validator<SalesData> validator = new Validator<SalesData>();
+            validator.Validate(salesData, dimensions, measures);
+            dimensions = validator.SortAndFilterDimensions(dimensions);
+            measures = validator.SortAndFilterMeasures(measures);
             Node<SalesData> columnHeaderNode = nodeBuilder.BuildColumnHeaders(salesData, dimensions, measures, displayGrandTotals);
             DisplayGraph(columnHeaderNode);
             Console.ReadKey();
