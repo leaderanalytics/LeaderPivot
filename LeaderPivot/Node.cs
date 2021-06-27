@@ -18,6 +18,7 @@ namespace LeaderAnalytics.LeaderPivot
         public string CellKey { get; set; }
         public object Value { get; set; }
         public List<Node<T>> Children { get; set; }
+        public string DimensionID { get; set; }
 
         public Node() => Children = new List<Node<T>>();
     }

@@ -120,9 +120,9 @@ namespace TestData
         {
             List<Measure<SalesData>> measures = new List<Measure<SalesData>>
             {
-                new Measure<SalesData> { Aggragate = x => x.Sum(y => y.Quantity), DisplayValue = "Quantity", Format="{0:n0}", Sequence = 2 },
-                new Measure<SalesData> { Aggragate = x => x.Sum(y => y.Quantity * y.UnitPrice), DisplayValue = "Revenue", Format="{0:C}", Sequence = 3 },
-                new Measure<SalesData> { Aggragate = x => x.Count(), DisplayValue = "Count", Format="{0:n0}", Sequence = 1}
+                new Measure<SalesData> { Aggragate = x => x.Sum(y => y.Quantity), DisplayValue = "Quantity", Format="{0:n0}", Sequence = 2, IsEnabled = true },
+                new Measure<SalesData> { Aggragate = x => x.Sum(y => y.Quantity * y.UnitPrice), DisplayValue = "Revenue", Format="{0:C}", Sequence = 3, IsEnabled = true },
+                new Measure<SalesData> { Aggragate = x => x.Count(), DisplayValue = "Count", Format="{0:n0}", Sequence = 1, IsEnabled = true}
             };
             return measures;
         }

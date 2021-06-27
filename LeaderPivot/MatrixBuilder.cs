@@ -68,12 +68,12 @@ namespace LeaderAnalytics.LeaderPivot
 
                 // Add row zero.  Add a cell to that row at 0,0 spanning row headers and column headers.
                 MatrixRow row = new MatrixRow();
-                row.Cells.Add(new MatrixCell(null, CellType.MeasureHeader, headerHeight, columnSpan));
+                row.Cells.Add(new MatrixCell(null, CellType.MeasureHeader, true, headerHeight, columnSpan));
                 t.Rows.Add(row);
 
                 // Add a second cell to row zero that is as wide as the number of leaf node columns in node.
 
-                row.Cells.Add(new MatrixCell(null, CellType.MeasureHeader, 1, totalWidth));
+                row.Cells.Add(new MatrixCell(null, CellType.MeasureHeader, true, 1, totalWidth));
 
                 // Add remaining rows to display column headers.  We have already added one.
                 for (int i = 0; i < headerHeight - 1; i++)
@@ -107,7 +107,7 @@ namespace LeaderAnalytics.LeaderPivot
                 rowIndex = rowIndex - (rowSpan - 1);
 
             if(node.CellType != CellType.Root)
-                t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, rowSpan, colSpan));
+                t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, node.IsExpanded, rowSpan, colSpan));
         }
 
         private void BuildRows(Node<T> node, Matrix t, int index, int peerDepth)
@@ -132,7 +132,7 @@ namespace LeaderAnalytics.LeaderPivot
                     colSpan = headerWidth - peerDepth + 1;
 
                 if (node.CellType != CellType.Root)
-                    t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, rowSpan, colSpan));
+                    t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, node.IsExpanded, rowSpan, colSpan));
             }
             
             // Render measure cells
@@ -149,10 +149,10 @@ namespace LeaderAnalytics.LeaderPivot
 
                     while (colCount < colIndex)
                     {
-                        t.Rows[rowIndex].Cells.Add(new MatrixCell(string.Empty, CellType.Measure, rowSpan, colSpan));
+                        t.Rows[rowIndex].Cells.Add(new MatrixCell(string.Empty, CellType.Measure, true, rowSpan, colSpan));
                         colCount++;
                     }
-                    t.Rows[rowIndex].Cells.Add(new MatrixCell(child.Value, child.CellType, rowSpan, colSpan));
+                    t.Rows[rowIndex].Cells.Add(new MatrixCell(child.Value, child.CellType, true, rowSpan, colSpan));
                     colCount++;
                 }
                 
