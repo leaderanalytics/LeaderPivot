@@ -61,19 +61,18 @@ namespace LeaderAnalytics.LeaderPivot
                 // one for row zero which will display sort buttons for column dimensions so we keep the otherwise
                 // incorrect value.
                 headerHeight = GetHeaderDepth(node, false, 0);
-                
 
                 // We cant set the width of the cell at 0,0 because we don't have row data.
                 int columnSpan = 1;
 
                 // Add row zero.  Add a cell to that row at 0,0 spanning row headers and column headers.
                 MatrixRow row = new MatrixRow();
-                row.Cells.Add(new MatrixCell(null, CellType.MeasureHeader, true, headerHeight, columnSpan));
+                row.Cells.Add(new MatrixCell(null, CellType.MeasureHeader, null, true, headerHeight, columnSpan));
                 t.Rows.Add(row);
 
                 // Add a second cell to row zero that is as wide as the number of leaf node columns in node.
 
-                row.Cells.Add(new MatrixCell(null, CellType.MeasureHeader, true, 1, totalWidth));
+                row.Cells.Add(new MatrixCell(null, CellType.MeasureHeader, null, true, 1, totalWidth));
 
                 // Add remaining rows to display column headers.  We have already added one.
                 for (int i = 0; i < headerHeight - 1; i++)
@@ -107,7 +106,7 @@ namespace LeaderAnalytics.LeaderPivot
                 rowIndex = rowIndex - (rowSpan - 1);
 
             if(node.CellType != CellType.Root)
-                t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, node.IsExpanded, rowSpan, colSpan));
+                t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, node.Dimension.DisplayValue, node.Dimension.IsExpanded, rowSpan, colSpan));
         }
 
         private void BuildRows(Node<T> node, Matrix t, int index, int peerDepth)
@@ -132,7 +131,7 @@ namespace LeaderAnalytics.LeaderPivot
                     colSpan = headerWidth - peerDepth + 1;
 
                 if (node.CellType != CellType.Root)
-                    t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, node.IsExpanded, rowSpan, colSpan));
+                    t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, node.Dimension.DisplayValue, node.Dimension.IsExpanded, rowSpan, colSpan));
             }
             
             // Render measure cells
@@ -149,10 +148,10 @@ namespace LeaderAnalytics.LeaderPivot
 
                     while (colCount < colIndex)
                     {
-                        t.Rows[rowIndex].Cells.Add(new MatrixCell(string.Empty, CellType.Measure, true, rowSpan, colSpan));
+                        t.Rows[rowIndex].Cells.Add(new MatrixCell(string.Empty, CellType.Measure, child.Dimension.DisplayValue, true, rowSpan, colSpan));
                         colCount++;
                     }
-                    t.Rows[rowIndex].Cells.Add(new MatrixCell(child.Value, child.CellType, true, rowSpan, colSpan));
+                    t.Rows[rowIndex].Cells.Add(new MatrixCell(child.Value, child.CellType, child.Dimension.DisplayValue, true, rowSpan, colSpan));
                     colCount++;
                 }
                 
@@ -168,11 +167,27 @@ namespace LeaderAnalytics.LeaderPivot
         {
             int tmp = maxDepth + 1;
 
-            foreach (Node<T> child in node.Children.Where(x => (x.IsRow && checkRows || !x.IsRow && !checkRows) )) 
+            foreach (Node<T> child in node.Children.Where(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow) )) 
                 maxDepth = Math.Max(maxDepth, GetHeaderDepth(child, checkRows, tmp));
 
             return Math.Max(maxDepth, tmp);
         }
+
+
+
+        private int GetHeaderDepth2(Node<T> node, bool checkRows)
+        {
+            int maxDepth = node.Children.Count(x => (checkRows && x.Dimension.IsRow) || (!checkRows && !x.Dimension.IsRow));
+
+            if (maxDepth > 0)
+            {
+                foreach (Node<T> child in node.Children.Where(x => (checkRows && x.Dimension.IsRow) || (!checkRows && !x.Dimension.IsRow)))
+                    maxDepth = Math.Max(maxDepth, GetHeaderDepth2(child, checkRows));
+            }
+            return maxDepth;
+        }
+
+
 
         // Counts the number of leaf nodes at all levels
         private int GetLeafNodeCount(Node<T> node, bool checkRows)

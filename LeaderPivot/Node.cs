@@ -11,15 +11,18 @@ namespace LeaderAnalytics.LeaderPivot
     /// <typeparam name="T"></typeparam>
     public class Node<T>
     {
-        public bool IsExpanded { get; set; }
-        public bool IsRow { get; set; }
         public bool IsLeafNode { get; set; }
         public CellType CellType { get; set; }
         public string CellKey { get; set; }
         public object Value { get; set; }
         public List<Node<T>> Children { get; set; }
-        public string DimensionID { get; set; }
+        public Dimension<T> Dimension { get; set; }
+        public bool IsRow { get; set; }
 
-        public Node() => Children = new List<Node<T>>();
+        public Node(Dimension<T> dimension)
+        {
+            Dimension = dimension;
+            Children = new List<Node<T>>();
+        }
     }
 }

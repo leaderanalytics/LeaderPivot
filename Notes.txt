@@ -10,6 +10,13 @@ This library creates a pivot grid using a three step approach:
 3.) The matrix is passed to the UI which renders it.  Since the heavy lifting is done in steps 1 and 2 rendering the matrix is relatively simple.
 
 
+
+
+Why IsRow property is necessary on Node:
+GrandTotal nodes are created as columns for dimensions where IsRow is true.  The Nodes point the row dimension however they are rendered as columns so they need to use the property defined on the Node object.
+
+
+
 6/20/2021 Finished first version of node and matrix builders
 
 
