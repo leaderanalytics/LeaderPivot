@@ -43,34 +43,8 @@ namespace LeaderAnalytics.LeaderPivot
 
         }
 
-        public List<Dimension<T>> SortAndFilterDimensions(IEnumerable<Dimension<T>> dimensions)
-        {
-            // Returns dimensions sorted sorted by sequence
-            // up to and including the first collapsed dimension for each axis.
-
-            List<Dimension<T>> result = new List<Dimension<T>>(dimensions.Count());
-            bool collapsedRowFound = false;
-            bool collasedColFound = false;
-
-            foreach (Dimension<T> dim in dimensions.OrderBy(x => !x.IsRow).ThenBy(x => x.Sequence))
-            {
-                if (dim.IsRow && collapsedRowFound)
-                    continue;
-                else if (!dim.IsRow && collasedColFound)
-                    break;
-
-                result.Add(dim);
-
-                if (!dim.IsExpanded)
-                {
-                    if (dim.IsRow)
-                        collapsedRowFound = true;
-                    else
-                        collasedColFound = true;
-                }
-            }
-            return result;
-        }
+        public List<Dimension<T>> SortDimensions(IEnumerable<Dimension<T>> dimensions) => dimensions.OrderBy(x => !x.IsRow).ThenBy(x => x.Sequence).ToList();
+            
 
         public List<Measure<T>> SortAndFilterMeasures(IEnumerable<Measure<T>> measures) => measures.OrderBy(x => x.Sequence).Where(x => x.IsEnabled).ToList();
     }

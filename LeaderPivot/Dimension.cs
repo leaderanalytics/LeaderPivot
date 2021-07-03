@@ -31,7 +31,7 @@ namespace LeaderAnalytics.LeaderPivot
         public bool IsRow { get; set; }
 
         /// <summary>
-        /// If true child dimensions, if any will be displayed.  If false only totals will be displayed.
+        /// If true child dimensions, if any will be displayed.  If false only totals will be displayed.  This is a default only.
         /// </summary>
         public bool IsExpanded { get; set; }
 

@@ -12,7 +12,7 @@ namespace ConsoleDemo
 
         static void Main(string[] args)
         {
-            nodeBuilder = new NodeBuilder<SalesData>();
+            nodeBuilder = new NodeBuilder<SalesData>(NodeCache<SalesData>.Instance);
             DisplaySalesDataDataGraph();
             DisplaySalesDataHeaderGraph();
         }
@@ -28,7 +28,7 @@ namespace ConsoleDemo
             bool displayGrandTotals = true;
             Validator<SalesData> validator = new Validator<SalesData>();
             validator.Validate(salesData, dimensions, measures);
-            dimensions = validator.SortAndFilterDimensions(dimensions);
+            dimensions = validator.SortDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
             Node<SalesData> dataNode = nodeBuilder.Build(salesData, dimensions, measures, displayGrandTotals);
             DisplayGraph(dataNode);
@@ -45,7 +45,7 @@ namespace ConsoleDemo
             bool displayGrandTotals = true;
             Validator<SalesData> validator = new Validator<SalesData>();
             validator.Validate(salesData, dimensions, measures);
-            dimensions = validator.SortAndFilterDimensions(dimensions);
+            dimensions = validator.SortDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
             Node<SalesData> columnHeaderNode = nodeBuilder.BuildColumnHeaders(salesData, dimensions, measures, displayGrandTotals);
             DisplayGraph(columnHeaderNode);

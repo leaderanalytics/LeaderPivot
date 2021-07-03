@@ -27,7 +27,7 @@ namespace WebDemo.Pages
             List<Dimension<SalesData>> dimensions = salesDataService.LoadSalesDataDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
             bool displayGrandTotals = true;
-            NodeBuilder<SalesData> nodeBuilder = new NodeBuilder<SalesData>();
+            NodeBuilder<SalesData> nodeBuilder = new NodeBuilder<SalesData>(NodeCache<SalesData>.Instance);
             Validator<SalesData> validator = new Validator<SalesData>();
             MatrixBuilder<SalesData> matrixBuilder = new MatrixBuilder<SalesData>(nodeBuilder, validator);
             table = matrixBuilder.BuildMatrix(salesData, dimensions, measures, displayGrandTotals);

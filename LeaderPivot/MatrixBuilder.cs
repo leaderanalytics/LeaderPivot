@@ -38,7 +38,7 @@ namespace LeaderAnalytics.LeaderPivot
             this.DisplayGrandTotals = displayGrandTotals;
             ColumnIndexDict.Clear();
             validator.Validate(data, dimensions, measures);
-            dimensions = validator.SortAndFilterDimensions(dimensions);
+            dimensions = validator.SortDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
             Node<T> dataNode = nodeBuilder.Build(data, dimensions, measures, displayGrandTotals);
             Node<T> columnHeaders = nodeBuilder.BuildColumnHeaders(data, dimensions, measures, displayGrandTotals);
@@ -113,6 +113,7 @@ namespace LeaderAnalytics.LeaderPivot
         {
             if (index == 0)
             {
+                var junk = GetHeaderDepth2(node, true);
                 headerWidth = GetHeaderDepth(node, true, 0) - 1;
                 t.Rows[0].Cells[0].ColSpan = headerWidth;
                 t.Rows.Add(new MatrixRow());
