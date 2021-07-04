@@ -18,6 +18,7 @@ namespace LeaderAnalytics.LeaderPivot
         public object Value { get; set; }
         public bool IsRow { get; set; }         // Not always the same as the dimension, notably grand totals.
         public bool IsExpanded { get; set; }
+        public bool CanToggleExapansion { get; set; } // User can not toggle expansion on leaf dimensions (last dimension for each axis).  Also, IsExpanded must be true for leaf dimensions.
         public List<Node<T>> Children { get; set; }
 
         public Node(string id, Dimension<T> dimension)

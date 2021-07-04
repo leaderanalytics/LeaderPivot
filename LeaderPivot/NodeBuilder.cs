@@ -2,7 +2,6 @@
  * Copyright 2021 Leader Analytics 
  * www.LeaderAnalytics.com
  * www.SamWheat.com
- * Written by Sam Wheat
  * 
  */
 
@@ -27,14 +26,14 @@ namespace LeaderAnalytics.LeaderPivot
         public Node<T> Build(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
         {
             this.displayGrandTotals = displayGrandTotals;
-            return BuildNodes(new Node<T>("Root", dimensions.First(x => x.IsRow)), data, dimensions, measures, "root", "root");
+            return BuildNodes(new Node<T>("Root", dimensions.First(x => x.IsRow)) { IsExpanded = true }, data, dimensions, measures, "root", "root");
         }
 
         public Node<T> BuildColumnHeaders(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
         {
             this.displayGrandTotals = displayGrandTotals;
             buildHeaders = true;
-            return BuildNodes(new Node<T>("Root", dimensions.First(x => ! x.IsRow)), data, dimensions.Where(x => ! x.IsRow), measures, "root", "root");
+            return BuildNodes(new Node<T>("Root", dimensions.First(x => !x.IsRow)) { IsExpanded = true }, data, dimensions.Where(x => ! x.IsRow), measures, "root", "root");
         }
 
         private Node<T> BuildNodes(Node<T> parent, IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, string nodeID, string columnKey)
@@ -86,9 +85,10 @@ namespace LeaderAnalytics.LeaderPivot
 
         private void CreateTotals(Node<T> parentNode, IEnumerable<Measure<T>> measures, IEnumerable<Dimension<T>> dimensions, IEnumerable<T> grp, string nodeID, string columnKey, CellType cellType)
         {
+            // Total rows are always expanded
             Dimension<T> dimension = dimensions.First();
             object val = (cellType == CellType.TotalHeader ? DisplayValue(dimension, grp.First()) : "Grand") + " Total";
-            Node<T> total = nodeCache.Get(nodeID + cellType.ToString(), dimension, cellType, columnKey, val, dimension.IsRow, dimension.IsExpanded);
+            Node<T> total = nodeCache.Get(nodeID + cellType.ToString(), dimension, cellType, columnKey, val, dimension.IsRow, true);
             parentNode.Children.Add(total);
 
             if (buildHeaders)
@@ -102,11 +102,11 @@ namespace LeaderAnalytics.LeaderPivot
 
         private void CreateMeasures(Node<T> parentNode, IEnumerable<Measure<T>> measures, Dimension<T> dimension, IEnumerable<T> grp, string nodeID, string columnKey, CellType cellType)
         {
-            // Measure are always leaf node columns.
+            // Measure are always leaf node columns and are always expanded.
             foreach (Measure<T> measure in measures)
             {
                 object val  = string.IsNullOrEmpty(measure.Format) ? measure.Aggragate(grp) : String.Format(measure.Format, measure.Aggragate(grp));
-                Node<T> measureChild = nodeCache.Get(nodeID + measure.DisplayValue , dimension, cellType, columnKey + measure.DisplayValue, val, dimension.IsRow, dimension.IsExpanded);
+                Node<T> measureChild = nodeCache.Get(nodeID + measure.DisplayValue , dimension, cellType, columnKey + measure.DisplayValue, val, false, true);
                 parentNode.Children.Add(measureChild);
             }
         }
@@ -116,7 +116,7 @@ namespace LeaderAnalytics.LeaderPivot
             // Measure headers are always expanded and are always displayed as column headers - never as row headers.
             foreach (Measure<T> measure in measures)
             {
-                Node<T> measureHeader = nodeCache.Get(nodeID + measure.DisplayValue + "Header", parentNode.Dimension, CellType.MeasureHeader, columnKey + measure.DisplayValue, measure.DisplayValue, false, false);
+                Node<T> measureHeader = nodeCache.Get(nodeID + measure.DisplayValue + "Header", parentNode.Dimension, CellType.MeasureHeader, columnKey + measure.DisplayValue, measure.DisplayValue, false, true);
                 parentNode.Children.Add(measureHeader);
             }
         }

@@ -43,7 +43,28 @@ namespace LeaderAnalytics.LeaderPivot
 
         }
 
-        public List<Dimension<T>> SortDimensions(IEnumerable<Dimension<T>> dimensions) => dimensions.OrderBy(x => !x.IsRow).ThenBy(x => x.Sequence).ToList();
+
+        /// <summary>
+        /// Re-sequences and resets IsLeaf property on each dimension.  Call this method after dimension drag/drop operations.
+        /// </summary>
+        /// <param name="dimensions"></param>
+        /// <returns></returns>
+        public List<Dimension<T>> ValidateDimensions(IEnumerable<Dimension<T>> dimensions) 
+        {
+            var dimList = dimensions.OrderBy(x => !x.IsRow).ThenBy(x => x.Sequence).ToList();
+            
+            for (int i = 0; i < 2; i++)
+            {
+                var axis = dimList.Where(x => i == 0 ? x.IsRow : !x.IsRow).ToList();
+
+                for (int j = 0; j < axis.Count(); j++)
+                {
+                    axis[j].Sequence = j;
+                    axis[j].IsLeaf = j == axis.Count() - 1; // Reset IsLeaf in case user drags dimension
+                }
+            }
+            return dimList;
+        }
             
 
         public List<Measure<T>> SortAndFilterMeasures(IEnumerable<Measure<T>> measures) => measures.OrderBy(x => x.Sequence).Where(x => x.IsEnabled).ToList();

@@ -2,7 +2,6 @@
  * Copyright 2021 Leader Analytics 
  * www.LeaderAnalytics.com
  * www.SamWheat.com
- * Written by Sam Wheat
  * 
  */
 
@@ -23,6 +22,7 @@ namespace LeaderAnalytics.LeaderPivot
         private Dictionary<string, int> ColumnIndexDict;
         private NodeBuilder<T> nodeBuilder;
         private Validator<T> validator;
+        private bool fillCollapsedRow;
 
         public MatrixBuilder(NodeBuilder<T> nodeBuilder, Validator<T> validator)
         {
@@ -38,7 +38,7 @@ namespace LeaderAnalytics.LeaderPivot
             this.DisplayGrandTotals = displayGrandTotals;
             ColumnIndexDict.Clear();
             validator.Validate(data, dimensions, measures);
-            dimensions = validator.SortDimensions(dimensions);
+            dimensions = validator.ValidateDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
             Node<T> dataNode = nodeBuilder.Build(data, dimensions, measures, displayGrandTotals);
             Node<T> columnHeaders = nodeBuilder.BuildColumnHeaders(data, dimensions, measures, displayGrandTotals);
@@ -113,7 +113,6 @@ namespace LeaderAnalytics.LeaderPivot
         {
             if (index == 0)
             {
-                var junk = GetHeaderDepth2(node, true);
                 headerWidth = GetHeaderDepth(node, true, 0) - 1;
                 t.Rows[0].Cells[0].ColSpan = headerWidth;
                 t.Rows.Add(new MatrixRow());
@@ -126,12 +125,12 @@ namespace LeaderAnalytics.LeaderPivot
 
             if (node.IsRow)
             {
-                if (node.CellType != CellType.TotalHeader && node.CellType != CellType.GrandTotalHeader) 
+                if (node.IsExpanded && node.CellType != CellType.TotalHeader && node.CellType != CellType.GrandTotalHeader) 
                     rowSpan = Math.Max(GetLeafNodeCount(node, true),1);
-                else if(node.CellType == CellType.TotalHeader || node.CellType == CellType.GrandTotalHeader)
+                else if(!node.IsExpanded || node.CellType == CellType.TotalHeader || node.CellType == CellType.GrandTotalHeader)
                     colSpan = headerWidth - peerDepth + 1;
 
-                if (node.CellType != CellType.Root)
+                if (node.CellType != CellType.Root && ! fillCollapsedRow)
                     t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, node.Dimension.DisplayValue, node.Dimension.IsExpanded, rowSpan, colSpan));
             }
             
@@ -159,8 +158,11 @@ namespace LeaderAnalytics.LeaderPivot
                 t.Rows.Add(new MatrixRow());
             }
 
-            foreach (Node<T> child in node.Children.Where(x => x.IsRow))
-                BuildRows(child, t, ++index, peerDepth + 1);
+            fillCollapsedRow = ! node.IsExpanded && node.CellType == CellType.GroupHeader;
+
+            if(node.IsExpanded)
+                foreach (Node<T> child in node.Children.Where(x => x.IsRow))
+                    BuildRows(child, t, ++index, peerDepth + 1);
         }
 
         // Finds the dimension (row or column) that has the greatest number of expanded levels.
@@ -175,21 +177,6 @@ namespace LeaderAnalytics.LeaderPivot
         }
 
 
-
-        private int GetHeaderDepth2(Node<T> node, bool checkRows)
-        {
-            int maxDepth = node.Children.Count(x => (checkRows && x.Dimension.IsRow) || (!checkRows && !x.Dimension.IsRow));
-
-            if (maxDepth > 0)
-            {
-                foreach (Node<T> child in node.Children.Where(x => (checkRows && x.Dimension.IsRow) || (!checkRows && !x.Dimension.IsRow)))
-                    maxDepth = Math.Max(maxDepth, GetHeaderDepth2(child, checkRows));
-            }
-            return maxDepth;
-        }
-
-
-
         // Counts the number of leaf nodes at all levels
         private int GetLeafNodeCount(Node<T> node, bool checkRows)
         {
@@ -197,18 +184,37 @@ namespace LeaderAnalytics.LeaderPivot
 
             // if the node is not expanded, or has no children of the specified axis it is a leaf node.
 
-            if (node.CellType != CellType.Root && ((checkRows && node.IsRow) || (!checkRows && !node.IsRow))
-                && (node.Children.Count(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)) == 0))
+            if ((node.CellType != CellType.Root) && (!node.IsExpanded || node.Children.Count(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)) == 0))
             {
-                count = 1;
+                count = node.IsExpanded ? 1 : 0; // don't count collapsed rows because we count the totals row.
             }
             else
             {
-                foreach (Node<T> child in node.Children)
+                foreach (Node<T> child in node.Children.Where(x => ((checkRows && x.IsRow) || (!checkRows && !x.IsRow))))
                     count += GetLeafNodeCount(child, checkRows);
             }
             
             return count;
         }
+
+        //private int GetLeafNodeCount(Node<T> node, bool checkRows)
+        //{
+        //    int count = 0;
+
+        //    // if the node is not expanded, or has no children of the specified axis it is a leaf node.
+
+        //    if (node.CellType != CellType.Root && ((checkRows && node.IsRow) || (!checkRows && !node.IsRow))
+        //        && (node.Children.Count(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)) == 0))
+        //    {
+        //        count = 1;
+        //    }
+        //    else
+        //    {
+        //        foreach (Node<T> child in node.Children)
+        //            count += GetLeafNodeCount(child, checkRows);
+        //    }
+
+        //    return count;
+        //}
     }
 }

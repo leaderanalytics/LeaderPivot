@@ -4,6 +4,9 @@ namespace LeaderAnalytics.LeaderPivot
 {
     public class Dimension<T>
     {
+        private bool _isExpanded;
+        private bool _canToggleExpansion = true;
+
         /// <summary>
         /// A friendly value that identifies how the data will be grouped i.e. City, Product Name, etc.  This value is displayed on the button that allows the user to reposition the dimension.
         /// This value is also used to uniquely identify the dimension.  DisplayValue can not be null and must be unique for each Dimension.
@@ -31,9 +34,23 @@ namespace LeaderAnalytics.LeaderPivot
         public bool IsRow { get; set; }
 
         /// <summary>
-        /// If true child dimensions, if any will be displayed.  If false only totals will be displayed.  This is a default only.
+        /// If true, child dimensions if any will be displayed.  If false only totals will be displayed. 
+        /// This is a default only.
         /// </summary>
-        public bool IsExpanded { get; set; }
+        public bool IsExpanded 
+        {
+            get => IsLeaf ? true : _isExpanded;
+            set => _isExpanded = value;
+        }
+
+        /// <summary>
+        /// If true, user can expand or collapse the dimension.  Default is true.
+        /// </summary>
+        public bool CanToggleExpansion 
+        { 
+            get => IsLeaf ? false : _canToggleExpansion;
+            set => _canToggleExpansion = value;
+        } 
 
         /// <summary>
         /// Set to true to sort data in ascending order, false for descending order.
@@ -59,5 +76,10 @@ namespace LeaderAnalytics.LeaderPivot
         /// If true, user can drag this dimension from row to column axis and vice versa.  Ignored if CanReposition is false.  Default value is true.
         /// </summary>
         public bool CanRepositionAcrossAxis { get; set; } = true;
+
+        /// <summary>
+        /// This property is set and maintained internally.  The leaf (last) dimension of each axis is always expanded and user can not toggle it.  
+        /// </summary>
+        internal bool IsLeaf { get; set; }
     }
 }

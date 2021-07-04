@@ -38,7 +38,7 @@ namespace LeaderAnalytics.LeaderPivot
                 node.CellKey = cellKey;
                 node.Value = value;
                 node.IsRow = isRow;
-                node.IsExpanded = isExpanded;
+                node.IsExpanded = dimension.IsExpanded;
                 cache.Add(nodeID, node);
             }
             else
