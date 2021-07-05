@@ -60,7 +60,7 @@ namespace TestData
                     GroupValue = x => x.State,
                     HeaderValue = x => x.State,
                     IsRow = true,
-                    IsExpanded = true,
+                    IsExpanded = false,
                     Sequence = 2,
                     IsAscending = true
                 },
@@ -84,7 +84,7 @@ namespace TestData
                     GroupValue = x => x.Year,
                     HeaderValue = x => $"Year: {x.Year}",
                     IsRow = false,
-                    IsExpanded = false,
+                    IsExpanded = true,
                     Sequence = 0,
                     IsAscending = true
                 },
@@ -95,7 +95,7 @@ namespace TestData
                     GroupValue = x => x.Quarter,
                     HeaderValue = x => $"Quarter: {x.Quarter}",
                     IsRow = false,
-                    IsExpanded = true,
+                    IsExpanded = false,
                     Sequence = 1,
                     IsAscending = true
                 },
@@ -107,7 +107,7 @@ namespace TestData
                     HeaderValue = x => x.Month,
                     SortValue = x => System.Array.IndexOf(Months, x).ToString(),
                     IsRow = false,
-                    IsExpanded = true,
+                    IsExpanded = false,
                     Sequence = 2,
                     IsAscending = true
                 }

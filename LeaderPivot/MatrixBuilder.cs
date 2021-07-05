@@ -23,6 +23,7 @@ namespace LeaderAnalytics.LeaderPivot
         private NodeBuilder<T> nodeBuilder;
         private Validator<T> validator;
         private bool fillCollapsedRow;
+        private string collapsedColumnHeader;
 
         public MatrixBuilder(NodeBuilder<T> nodeBuilder, Validator<T> validator)
         {
@@ -86,18 +87,31 @@ namespace LeaderAnalytics.LeaderPivot
             foreach (Node<T> child in node.Children)
                 tmpHeaderDepth = Math.Max(tmpHeaderDepth, GetHeaderDepth(node, false, 0));
 
-            foreach (Node<T> child in node.Children)
-                BuildColumnHeaders(child, t, index + 1, tmpHeaderDepth);
-           
+            if (node.IsExpanded)
+            {
+                foreach (Node<T> child in node.Children)
+                    BuildColumnHeaders(child, t, index + 1, tmpHeaderDepth);
+            }
+            else
+            {
+                collapsedColumnHeader = node.Value.ToString();
+                return;
+            }
             int headerDepth = GetHeaderDepth(node, false, 0);
             int rowSpan = 1;
             int colSpan = 1;
             int rowIndex = headerHeight - headerDepth;
 
+            if (node.CellType == CellType.TotalHeader && !string.IsNullOrEmpty(collapsedColumnHeader))
+            {
+                node.Value = collapsedColumnHeader;
+                collapsedColumnHeader = null;
+            }
+
             if (node.CellType != CellType.MeasureHeader)
             {
                 rowSpan = peerDepth - headerDepth;
-                colSpan = GetLeafNodeCount(node, false);
+                colSpan = node.IsExpanded ? GetLeafNodeCount(node, false) : measures.Count();
             }
             else
                 ColumnIndexDict.Add(node.CellKey, t.Rows[rowIndex].Cells.Count);
@@ -144,7 +158,10 @@ namespace LeaderAnalytics.LeaderPivot
             {
                 foreach (Node<T> child in columnData)
                 {
-                    colIndex = ColumnIndexDict[child.CellKey];
+                    bool found = ColumnIndexDict.TryGetValue(child.CellKey, out colIndex);
+
+                    if (! found)
+                        continue; // Column data will not be found if column is collapsed.
 
                     while (colCount < colIndex)
                     {
@@ -170,8 +187,9 @@ namespace LeaderAnalytics.LeaderPivot
         {
             int tmp = maxDepth + 1;
 
-            foreach (Node<T> child in node.Children.Where(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow) )) 
-                maxDepth = Math.Max(maxDepth, GetHeaderDepth(child, checkRows, tmp));
+            if(node.IsExpanded)
+                foreach (Node<T> child in node.Children.Where(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow) )) 
+                    maxDepth = Math.Max(maxDepth, GetHeaderDepth(child, checkRows, tmp));
 
             return Math.Max(maxDepth, tmp);
         }
@@ -196,25 +214,5 @@ namespace LeaderAnalytics.LeaderPivot
             
             return count;
         }
-
-        //private int GetLeafNodeCount(Node<T> node, bool checkRows)
-        //{
-        //    int count = 0;
-
-        //    // if the node is not expanded, or has no children of the specified axis it is a leaf node.
-
-        //    if (node.CellType != CellType.Root && ((checkRows && node.IsRow) || (!checkRows && !node.IsRow))
-        //        && (node.Children.Count(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)) == 0))
-        //    {
-        //        count = 1;
-        //    }
-        //    else
-        //    {
-        //        foreach (Node<T> child in node.Children)
-        //            count += GetLeafNodeCount(child, checkRows);
-        //    }
-
-        //    return count;
-        //}
     }
 }
