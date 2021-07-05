@@ -63,7 +63,8 @@ namespace ConsoleDemo
                     "CellType".PadRight(20) +
                     "Dim DisplayValue".PadRight(20) +
                     "IsRow".PadRight(8) +
-                    "IsExp".PadRight(8) 
+                    "IsExp".PadRight(8) +
+                    "ID".PadRight(30)
 
                     );
 
@@ -83,7 +84,8 @@ namespace ConsoleDemo
                     v.CellType.ToString().PadRight(20) +
                     v.Dimension.DisplayValue.PadRight(20) +
                     (v.IsRow ? "Y" : "N").PadRight(8) +
-                    (v.IsExpanded ? "Y" : "N").PadRight(8) 
+                    (v.IsExpanded ? "Y" : "N").PadRight(8) +
+                    v.ID.PadRight(30)
 
                     );
             }

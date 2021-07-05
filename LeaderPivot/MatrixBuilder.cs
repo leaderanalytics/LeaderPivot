@@ -17,6 +17,8 @@ namespace LeaderAnalytics.LeaderPivot
         protected IEnumerable<Dimension<T>> dimensions;
         protected IEnumerable<Measure<T>> measures;
         protected bool DisplayGrandTotals;
+        protected Node<T> dataNode;
+        protected Node<T> columnHeaderNode;
         private int headerHeight;   // Total number of column header rows including one topmost empty row. Also includes measure headers.
         private int headerWidth;    // Total number of row header columns   
         private Dictionary<string, int> ColumnIndexDict;
@@ -37,17 +39,38 @@ namespace LeaderAnalytics.LeaderPivot
             this.data = data;
             this.measures = measures;
             this.DisplayGrandTotals = displayGrandTotals;
-            ColumnIndexDict.Clear();
+
             validator.Validate(data, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
-            Node<T> dataNode = nodeBuilder.Build(data, dimensions, measures, displayGrandTotals);
-            Node<T> columnHeaders = nodeBuilder.BuildColumnHeaders(data, dimensions, measures, displayGrandTotals);
+
+
+            dataNode = nodeBuilder.Build(data, dimensions, measures, displayGrandTotals);
+            columnHeaderNode = nodeBuilder.BuildColumnHeaders(data, dimensions, measures, displayGrandTotals);
+
+            return buildMatrix();
+            
+        }
+
+
+        public Matrix ToggleNodeExpansion(string nodeID)
+        {
+            if (!_ToggleNodeExpansion(nodeID, dataNode))
+                _ToggleNodeExpansion(nodeID, columnHeaderNode);
+
+            return buildMatrix();
+        }
+
+
+        private Matrix buildMatrix()
+        {
+            ColumnIndexDict.Clear();
             Matrix t = new Matrix();
-            BuildColumnHeaders(columnHeaders, t, 0, 0);
+            BuildColumnHeaders(columnHeaderNode, t, 0, 0);
             BuildRows(dataNode, t, 0, 0);
             return t;
         }
+
 
         private void BuildColumnHeaders(Node<T> node, Matrix t, int index, int peerDepth)
         {
@@ -68,12 +91,12 @@ namespace LeaderAnalytics.LeaderPivot
 
                 // Add row zero.  Add a cell to that row at 0,0 spanning row headers and column headers.
                 MatrixRow row = new MatrixRow();
-                row.Cells.Add(new MatrixCell(null, CellType.MeasureHeader, null, true, headerHeight, columnSpan));
+                row.Cells.Add(new MatrixCell(CellType.MeasureHeader, headerHeight, columnSpan));
                 t.Rows.Add(row);
 
                 // Add a second cell to row zero that is as wide as the number of leaf node columns in node.
 
-                row.Cells.Add(new MatrixCell(null, CellType.MeasureHeader, null, true, 1, totalWidth));
+                row.Cells.Add(new MatrixCell(CellType.MeasureHeader, 1, totalWidth));
 
                 // Add remaining rows to display column headers.  We have already added one.
                 for (int i = 0; i < headerHeight - 1; i++)
@@ -94,6 +117,8 @@ namespace LeaderAnalytics.LeaderPivot
             }
             else
             {
+                // If the node is collapsed, save it's value
+                // and plug it into the totals node on the next iteration.
                 collapsedColumnHeader = node.Value.ToString();
                 return;
             }
@@ -120,7 +145,7 @@ namespace LeaderAnalytics.LeaderPivot
                 rowIndex = rowIndex - (rowSpan - 1);
 
             if(node.CellType != CellType.Root)
-                t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, node.Dimension.DisplayValue, node.Dimension.IsExpanded, rowSpan, colSpan));
+                t.Rows[rowIndex].Cells.Add(new MatrixCell(node, rowSpan, colSpan));
         }
 
         private void BuildRows(Node<T> node, Matrix t, int index, int peerDepth)
@@ -144,8 +169,12 @@ namespace LeaderAnalytics.LeaderPivot
                 else if(!node.IsExpanded || node.CellType == CellType.TotalHeader || node.CellType == CellType.GrandTotalHeader)
                     colSpan = headerWidth - peerDepth + 1;
 
+                // Add the node whether or not it is expanded.  If the node is not expanded
+                // the next iteration of the call to BuildRows will be the total (since we will not drill into child nodes)
+                // and we just display the total amounts.
+
                 if (node.CellType != CellType.Root && ! fillCollapsedRow)
-                    t.Rows[rowIndex].Cells.Add(new MatrixCell(node.Value, node.CellType, node.Dimension.DisplayValue, node.Dimension.IsExpanded, rowSpan, colSpan));
+                    t.Rows[rowIndex].Cells.Add(new MatrixCell(node, rowSpan, colSpan));
             }
             
             // Render measure cells
@@ -154,21 +183,20 @@ namespace LeaderAnalytics.LeaderPivot
             int colCount = 0;  // Ordinal position.  If less than colIndex, insert dummy cells
             IEnumerable<Node<T>> columnData = node.Children.Where(x => !x.IsRow);
             
-            if (columnData.Any())
+            if (columnData.Any()) // Only the leaf row dimension and totals rows will contain column data.
             {
                 foreach (Node<T> child in columnData)
                 {
-                    bool found = ColumnIndexDict.TryGetValue(child.CellKey, out colIndex);
 
-                    if (! found)
+                    if (!ColumnIndexDict.TryGetValue(child.CellKey, out colIndex))
                         continue; // Column data will not be found if column is collapsed.
 
                     while (colCount < colIndex)
                     {
-                        t.Rows[rowIndex].Cells.Add(new MatrixCell(string.Empty, CellType.Measure, child.Dimension.DisplayValue, true, rowSpan, colSpan));
+                        t.Rows[rowIndex].Cells.Add(new MatrixCell(CellType.Measure, rowSpan, colSpan));
                         colCount++;
                     }
-                    t.Rows[rowIndex].Cells.Add(new MatrixCell(child.Value, child.CellType, child.Dimension.DisplayValue, true, rowSpan, colSpan));
+                    t.Rows[rowIndex].Cells.Add(new MatrixCell(child, rowSpan, colSpan));
                     colCount++;
                 }
                 
@@ -194,7 +222,6 @@ namespace LeaderAnalytics.LeaderPivot
             return Math.Max(maxDepth, tmp);
         }
 
-
         // Counts the number of leaf nodes at all levels
         private int GetLeafNodeCount(Node<T> node, bool checkRows)
         {
@@ -213,6 +240,20 @@ namespace LeaderAnalytics.LeaderPivot
             }
             
             return count;
+        }
+
+        private bool _ToggleNodeExpansion(string nodeID, Node<T> parent)
+        {
+            foreach (Node<T> node in parent.Children)
+            {
+                if (node.ID == nodeID)
+                {
+                    node.IsExpanded = !node.IsExpanded;
+                    return true;
+                }
+                _ToggleNodeExpansion(nodeID, node);
+            }
+            return false;
         }
     }
 }

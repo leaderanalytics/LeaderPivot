@@ -54,7 +54,7 @@ namespace LeaderAnalytics.LeaderPivot
                 if (child == null)
                 {
                     // Child will be null if dimension is a row.
-                    child = nodeCache.Get(nodeID, dimension,CellType.GroupHeader, columnKey, DisplayValue(dimension, grp.First()), dimension.IsRow, dimension.IsExpanded);
+                    child = nodeCache.Get(nodeID, dimension, CellType.GroupHeader, columnKey, DisplayValue(dimension, grp.First()), dimension.IsRow, dimension.IsExpanded);
                     parent.Children.Add(child);
                 }
 
