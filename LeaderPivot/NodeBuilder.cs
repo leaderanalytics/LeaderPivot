@@ -1,7 +1,7 @@
 ﻿/* 
  * Copyright 2021 Leader Analytics 
- * www.LeaderAnalytics.com
- * www.SamWheat.com
+ * LeaderAnalytics.com
+ * SamWheat.com
  * 
  */
 

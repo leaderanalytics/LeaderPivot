@@ -1,7 +1,7 @@
 ﻿/* 
  * Copyright 2021 Leader Analytics 
- * www.LeaderAnalytics.com
- * www.SamWheat.com
+ * LeaderAnalytics.com
+ * SamWheat.com
  * 
  */
 
@@ -49,7 +49,6 @@ namespace LeaderAnalytics.LeaderPivot
             columnHeaderNode = nodeBuilder.BuildColumnHeaders(data, dimensions, measures, displayGrandTotals);
 
             return buildMatrix();
-            
         }
 
 
@@ -196,6 +195,7 @@ namespace LeaderAnalytics.LeaderPivot
                         t.Rows[rowIndex].Cells.Add(new MatrixCell(CellType.Measure, rowSpan, colSpan));
                         colCount++;
                     }
+
                     t.Rows[rowIndex].Cells.Add(new MatrixCell(child, rowSpan, colSpan));
                     colCount++;
                 }
