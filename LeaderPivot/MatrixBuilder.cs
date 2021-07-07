@@ -24,8 +24,7 @@ namespace LeaderAnalytics.LeaderPivot
         private Dictionary<string, int> ColumnIndexDict;
         private NodeBuilder<T> nodeBuilder;
         private Validator<T> validator;
-        private bool fillCollapsedRow;
-        private string collapsedColumnHeader;
+        private bool fillCollapsedCell;
 
         public MatrixBuilder(NodeBuilder<T> nodeBuilder, Validator<T> validator)
         {
@@ -104,33 +103,10 @@ namespace LeaderAnalytics.LeaderPivot
                 index = 1;  // Don't add any cells to row 0.
             }
 
-            int tmpHeaderDepth = 0;
-            
-            foreach (Node<T> child in node.Children)
-                tmpHeaderDepth = Math.Max(tmpHeaderDepth, GetHeaderDepth(node, false, 0));
-
-            if (node.IsExpanded)
-            {
-                foreach (Node<T> child in node.Children)
-                    BuildColumnHeaders(child, t, index + 1, tmpHeaderDepth);
-            }
-            else
-            {
-                // If the node is collapsed, save it's value
-                // and plug it into the totals node on the next iteration.
-                collapsedColumnHeader = node.Value.ToString();
-                return;
-            }
-            int headerDepth = GetHeaderDepth(node, false, 0);
+            int headerDepth = GetHeaderDepth(node, false, 0) + (node.IsExpanded ? 0 : 1);
             int rowSpan = 1;
             int colSpan = 1;
             int rowIndex = headerHeight - headerDepth;
-
-            if (node.CellType == CellType.TotalHeader && !string.IsNullOrEmpty(collapsedColumnHeader))
-            {
-                node.Value = collapsedColumnHeader;
-                collapsedColumnHeader = null;
-            }
 
             if (node.CellType != CellType.MeasureHeader)
             {
@@ -143,8 +119,14 @@ namespace LeaderAnalytics.LeaderPivot
             if (rowSpan > 1)
                 rowIndex = rowIndex - (rowSpan - 1);
 
-            if(node.CellType != CellType.Root)
+            if(node.CellType != CellType.Root && ! fillCollapsedCell)
                 t.Rows[rowIndex].Cells.Add(new MatrixCell(node, rowSpan, colSpan));
+
+            fillCollapsedCell = !node.IsExpanded && node.CellType == CellType.GroupHeader;
+
+            if (node.IsExpanded)
+                foreach (Node<T> child in node.Children)
+                    BuildColumnHeaders(child, t, index + 1, headerDepth);
         }
 
         private void BuildRows(Node<T> node, Matrix t, int index, int peerDepth)
@@ -172,7 +154,7 @@ namespace LeaderAnalytics.LeaderPivot
                 // the next iteration of the call to BuildRows will be the total (since we will not drill into child nodes)
                 // and we just display the total amounts.
 
-                if (node.CellType != CellType.Root && ! fillCollapsedRow)
+                if (node.CellType != CellType.Root && ! fillCollapsedCell)
                     t.Rows[rowIndex].Cells.Add(new MatrixCell(node, rowSpan, colSpan));
             }
             
@@ -203,7 +185,7 @@ namespace LeaderAnalytics.LeaderPivot
                 t.Rows.Add(new MatrixRow());
             }
 
-            fillCollapsedRow = ! node.IsExpanded && node.CellType == CellType.GroupHeader;
+            fillCollapsedCell = ! node.IsExpanded && node.CellType == CellType.GroupHeader;
 
             if(node.IsExpanded)
                 foreach (Node<T> child in node.Children.Where(x => x.IsRow))

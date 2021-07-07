@@ -84,7 +84,7 @@ namespace TestData
                     GroupValue = x => x.Year,
                     HeaderValue = x => $"Year: {x.Year}",
                     IsRow = false,
-                    IsExpanded = false,
+                    IsExpanded = true,
                     Sequence = 0,
                     IsAscending = true
                 },
