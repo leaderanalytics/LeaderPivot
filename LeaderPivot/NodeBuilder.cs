@@ -17,39 +17,48 @@ namespace LeaderAnalytics.LeaderPivot
         private NodeCache<T> nodeCache;
         private bool displayGrandTotals;
         private bool buildHeaders;
+        private List<string> NodeIDs;
+        private List<string> ColumnKeys;
 
         public NodeBuilder(NodeCache<T> nodeCache)
         {
             this.nodeCache = nodeCache;
+            NodeIDs = new List<string>();
+            ColumnKeys = new List<string>();
         }
 
         public Node<T> Build(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
         {
             this.displayGrandTotals = displayGrandTotals;
-            return BuildNodes(new Node<T>("Root", dimensions.First(x => x.IsRow)) { IsExpanded = true }, data, dimensions, measures, "root", "root");
+            return BuildNodes(new Node<T>("Root", dimensions.First(x => x.IsRow)) { IsExpanded = true }, data, dimensions, measures, 0);
         }
 
         public Node<T> BuildColumnHeaders(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
         {
             this.displayGrandTotals = displayGrandTotals;
             buildHeaders = true;
-            return BuildNodes(new Node<T>("Root", dimensions.First(x => !x.IsRow)) { IsExpanded = true }, data, dimensions.Where(x => ! x.IsRow), measures, "root", "root");
+            return BuildNodes(new Node<T>("Root", dimensions.First(x => !x.IsRow)) { IsExpanded = true }, data, dimensions.Where(x => ! x.IsRow), measures, 0);
         }
 
-        private Node<T> BuildNodes(Node<T> parent, IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, string nodeID, string columnKey)
+        private Node<T> BuildNodes(Node<T> parent, IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, int depthIndex)
         {
             var dimension = dimensions.First();
             var childDimensions = dimensions.Skip(1);
             bool isLeafNode = !childDimensions.Any();
             var groups = dimension.IsAscending ? data.GroupBy(dimension.GroupValue).OrderBy(x => SortValue(dimension, x.Key)) : data.GroupBy(dimension.GroupValue).OrderByDescending(x => SortValue(dimension, x.Key));
-            string oldColumnKey = columnKey;
+            
 
             foreach (var grp in groups)
             {
                 string grpKeyValue = grp.Key.ToString();
-                columnKey = dimension.IsRow ? columnKey : columnKey + grpKeyValue;
-                nodeID = nodeID + grpKeyValue;
+                
+                if(!dimension.IsRow)
+                    SetColumnKey(dimension.Sequence, grpKeyValue);
+
+                SetNodeID(depthIndex, grpKeyValue);
                 Node<T> child = (dimension.IsRow || buildHeaders) ? null : parent;
+                string nodeID = GetNodeID(depthIndex);
+                string columnKey = GetColumnKey(depthIndex);
 
                 if (child == null)
                 {
@@ -59,7 +68,7 @@ namespace LeaderAnalytics.LeaderPivot
                 }
 
                 if (!isLeafNode)  // isLeafNode and dimension.IsRow cannot both be true at the same time.
-                    BuildNodes(child, grp, childDimensions, measures, nodeID, columnKey);
+                    BuildNodes(child, grp, childDimensions, measures, ++depthIndex);
 
                 if ((buildHeaders && isLeafNode) || (!buildHeaders && !childDimensions.Any(x => x.IsRow)))
                 {
@@ -74,20 +83,28 @@ namespace LeaderAnalytics.LeaderPivot
                     }
                 }
                 else if (dimension.IsRow || buildHeaders)
-                    CreateTotals(parent, measures, dimensions, grp, nodeID, columnKey, CellType.TotalHeader);
+                    CreateTotals(parent, measures, dimensions, grp, nodeID, columnKey, CellType.TotalHeader, depthIndex);
             }
 
             if (parent.CellType == CellType.Root && displayGrandTotals)
-                CreateTotals(parent, measures, dimensions, data, nodeID + "GrandTotal", oldColumnKey , CellType.GrandTotalHeader);
+                CreateTotals(parent, measures, dimensions, data, GetNodeID(depthIndex) + "GrandTotal", GetColumnKey(depthIndex) , CellType.GrandTotalHeader, depthIndex);  // need oldColumnKey here
 
             return parent;
         }
 
-        private void CreateTotals(Node<T> parentNode, IEnumerable<Measure<T>> measures, IEnumerable<Dimension<T>> dimensions, IEnumerable<T> grp, string nodeID, string columnKey, CellType cellType)
+        private void CreateTotals(Node<T> parentNode, IEnumerable<Measure<T>> measures, IEnumerable<Dimension<T>> dimensions, IEnumerable<T> grp, string nodeID, string columnKey, CellType cellType, int depthIndex)
         {
             // Total rows are always expanded
             Dimension<T> dimension = dimensions.First();
             object val = (cellType == CellType.TotalHeader ? DisplayValue(dimension, grp.First()) : "Grand") + " Total";
+            
+            
+            
+            columnKey = columnKey + val;
+
+
+
+
             Node<T> total = nodeCache.Get(nodeID + cellType.ToString(), dimension, cellType, columnKey, val, dimension.IsRow, true);
             parentNode.Children.Add(total);
 
@@ -95,7 +112,7 @@ namespace LeaderAnalytics.LeaderPivot
                 CreateMeasureHeaders(total, measures, nodeID, columnKey);
             else
             {
-                BuildNodes(total, grp, dimensions.Skip(1).Where(x => !x.IsRow), measures, nodeID, columnKey);
+                BuildNodes(total, grp, dimensions.Skip(1).Where(x => !x.IsRow), measures, ++depthIndex);
                 CreateMeasures(total, measures, dimension, grp, nodeID, columnKey, CellType.GrandTotal);
             }
         }
@@ -124,6 +141,24 @@ namespace LeaderAnalytics.LeaderPivot
         private string DisplayValue(Dimension<T> dimension, T data) => dimension.HeaderValue == null ? dimension.GroupValue(data) : dimension.HeaderValue(data);
 
         private string SortValue(Dimension<T> dimension, string data) => dimension.SortValue == null ? data : dimension.SortValue(data);
+        private string GetNodeID(int depthIndex) => String.Join('/', NodeIDs.Take(depthIndex + 1).ToArray());
+
+        private string GetColumnKey(int depthIndex) => String.Join('/', ColumnKeys.Take(depthIndex + 1).ToArray());
         
+        private void SetNodeID(int depthIndex, string value)
+        {
+            if (NodeIDs.Count == depthIndex)
+                NodeIDs.Add(value);
+            else
+                NodeIDs[depthIndex] = value;
+        }
+
+        private void SetColumnKey(int depthIndex, string value)
+        {
+            if (ColumnKeys.Count == depthIndex)
+                ColumnKeys.Add(value);
+            else
+                ColumnKeys[depthIndex] = value;
+        }
     }
 }

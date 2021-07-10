@@ -105,7 +105,7 @@ namespace TestData
                     DisplayValue = "Month",
                     GroupValue = x => x.Month,
                     HeaderValue = x => x.Month,
-                    SortValue = x => System.Array.IndexOf(Months, x).ToString(),
+                    SortValue = x =>  System.Array.IndexOf(Months, x).ToString().PadLeft(2,'0'),
                     IsRow = false,
                     IsExpanded = true,
                     Sequence = 2,
