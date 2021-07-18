@@ -81,5 +81,11 @@ namespace LeaderAnalytics.LeaderPivot
         /// This property is set and maintained internally.  The leaf (last) dimension of each axis is always expanded and user can not toggle it.  
         /// </summary>
         internal bool IsLeaf { get; set; }
+
+        /// <summary>
+        /// This property is set and maintained internally.  Ordinal is the ordinal position of a dimension across both axis.  It is
+        /// used to create a node ID.
+        /// </summary>
+        internal int Ordinal { get; set; }
     }
 }

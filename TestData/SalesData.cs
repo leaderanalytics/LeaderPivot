@@ -83,7 +83,7 @@ namespace TestData
                     DisplayValue = "Year",
                     GroupValue = x => x.Year,
                     HeaderValue = x => $"Year: {x.Year}",
-                    IsRow = false,
+                    IsRow = true,
                     IsExpanded = true,
                     Sequence = 0,
                     IsAscending = true
@@ -94,7 +94,7 @@ namespace TestData
                     DisplayValue = "Quarter",
                     GroupValue = x => x.Quarter,
                     HeaderValue = x => $"Quarter: {x.Quarter}",
-                    IsRow = false,
+                    IsRow = true,
                     IsExpanded = true,
                     Sequence = 1,
                     IsAscending = true

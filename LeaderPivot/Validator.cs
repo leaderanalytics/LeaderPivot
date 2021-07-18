@@ -52,7 +52,8 @@ namespace LeaderAnalytics.LeaderPivot
         public List<Dimension<T>> ValidateDimensions(IEnumerable<Dimension<T>> dimensions) 
         {
             var dimList = dimensions.OrderBy(x => !x.IsRow).ThenBy(x => x.Sequence).ToList();
-            
+            int ordinal = 0;
+
             for (int i = 0; i < 2; i++)
             {
                 var axis = dimList.Where(x => i == 0 ? x.IsRow : !x.IsRow).ToList();
@@ -61,6 +62,7 @@ namespace LeaderAnalytics.LeaderPivot
                 {
                     axis[j].Sequence = j;
                     axis[j].IsLeaf = j == axis.Count() - 1; // Reset IsLeaf in case user drags dimension
+                    axis[j].Ordinal = ordinal++;
                 }
             }
             return dimList;
