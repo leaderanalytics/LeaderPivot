@@ -79,9 +79,7 @@ namespace LeaderAnalytics.LeaderPivot
                     // Create measures on leaf nodes
 
                     if (buildHeaders)
-                    {
                         CreateMeasureHeaders(child, measures, nodeID, columnKey);
-                    }
                     else
                     {
                         CellType cellType = (isLeafNode && child.CellType == CellType.GroupHeader) ? CellType.Measure : (dimension.IsRow || child.CellType == CellType.GrandTotalHeader) ? CellType.GrandTotal : CellType.Total;
@@ -101,18 +99,12 @@ namespace LeaderAnalytics.LeaderPivot
 
         private void CreateTotals(Node<T> parentNode, IEnumerable<Measure<T>> measures, IEnumerable<Dimension<T>> dimensions, IEnumerable<T> grp, string nodeID, string columnKey, CellType cellType)
         {
-
-            if (cellType == CellType.GrandTotalHeader)
-            {
-                var junk = 1;
-            }
-
             // Total rows are always expanded
             Dimension<T> dimension = dimensions.First();
             object val = (cellType == CellType.TotalHeader ? DisplayValue(dimension, grp.First()) : "Grand") + " Total";
             SetNodeID(dimension.Ordinal, nodeID + cellType.ToString());
             nodeID = GetNodeID(dimension.Ordinal);
-            columnKey = cellType == CellType.GrandTotalHeader && (parentNode.CellType != CellType.Root || buildHeaders)? CellType.GrandTotal.ToString() : columnKey + val;
+            columnKey = cellType == CellType.GrandTotalHeader && (parentNode.CellType != CellType.Root || buildHeaders)? CellType.GrandTotal.ToString() : GetColumnKey(dimension.Sequence);
             Node<T> total = nodeCache.Get(nodeID, dimension, cellType, columnKey, val, dimension.IsRow, true);
             parentNode.Children.Add(total);
 
