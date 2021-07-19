@@ -102,7 +102,7 @@ namespace LeaderAnalytics.LeaderPivot
             // Total rows are always expanded
             Dimension<T> dimension = dimensions.First();
             object val = (cellType == CellType.TotalHeader ? DisplayValue(dimension, grp.First()) : "Grand") + " Total";
-            SetNodeID(dimension.Ordinal, nodeID + cellType.ToString());
+            SetNodeID(dimension.Ordinal, val.ToString());
             nodeID = GetNodeID(dimension.Ordinal);
             columnKey = cellType == CellType.GrandTotalHeader && (parentNode.CellType != CellType.Root || buildHeaders)? CellType.GrandTotal.ToString() : GetColumnKey(dimension.Sequence);
             Node<T> total = nodeCache.Get(nodeID, dimension, cellType, columnKey, val, dimension.IsRow, true);
