@@ -38,18 +38,14 @@ namespace LeaderAnalytics.LeaderPivot
             this.data = data;
             this.measures = measures;
             this.DisplayGrandTotals = displayGrandTotals;
-
             validator.Validate(data, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
-
-
             dataNode = nodeBuilder.Build(data, dimensions, measures, displayGrandTotals);
             columnHeaderNode = nodeBuilder.BuildColumnHeaders(data, dimensions, measures, displayGrandTotals);
-
             return buildMatrix();
         }
-
+        
 
         public Matrix ToggleNodeExpansion(string nodeID)
         {

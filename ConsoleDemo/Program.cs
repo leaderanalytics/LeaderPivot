@@ -33,7 +33,6 @@ namespace ConsoleDemo
             measures = validator.SortAndFilterMeasures(measures);
             Node<SalesData> dataNode = nodeBuilder.Build(salesData, dimensions, measures, displayGrandTotals);
             DisplayGraph(dataNode);
-            Console.ReadKey();
         }
 
         static void DisplaySalesDataHeaderGraph()
@@ -50,7 +49,6 @@ namespace ConsoleDemo
             measures = validator.SortAndFilterMeasures(measures);
             Node<SalesData> columnHeaderNode = nodeBuilder.BuildColumnHeaders(salesData, dimensions, measures, displayGrandTotals);
             DisplayGraph(columnHeaderNode);
-            Console.ReadKey();
         }
 
         static void DisplayGraph(Node<SalesData> v)

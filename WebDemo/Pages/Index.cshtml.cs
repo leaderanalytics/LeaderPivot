@@ -14,6 +14,7 @@ namespace WebDemo.Pages
     {
         private readonly ILogger<IndexModel> _logger;
         public Matrix table { get; set; }
+        private bool displayGrandTotals = false;
 
         public IndexModel(ILogger<IndexModel> logger)
         {
@@ -26,7 +27,7 @@ namespace WebDemo.Pages
             List<SalesData> salesData = salesDataService.GetSalesData();
             List<Dimension<SalesData>> dimensions = salesDataService.LoadSalesDataDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
-            bool displayGrandTotals = true;
+            displayGrandTotals = true;
             NodeBuilder<SalesData> nodeBuilder = new NodeBuilder<SalesData>(NodeCache<SalesData>.Instance);
             Validator<SalesData> validator = new Validator<SalesData>();
             MatrixBuilder<SalesData> matrixBuilder = new MatrixBuilder<SalesData>(nodeBuilder, validator);

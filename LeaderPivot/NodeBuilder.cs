@@ -24,14 +24,14 @@ namespace LeaderAnalytics.LeaderPivot
         public NodeBuilder(NodeCache<T> nodeCache)
         {
             this.nodeCache = nodeCache;
-            NodeIDs = new List<string>();
-            ColumnKeys = new List<string>();
-            MeasureDatas = new List<MeasureData<T>>();
+            Init();
         }
 
         public Node<T> Build(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
         {
+            Init();
             this.displayGrandTotals = displayGrandTotals;
+            buildHeaders = false;
             return BuildNodes(new Node<T>("Root", dimensions.First(x => x.IsRow)) { IsExpanded = true }, data, dimensions, measures);
         }
 
@@ -83,9 +83,11 @@ namespace LeaderAnalytics.LeaderPivot
                         CreateMeasureHeaders(child, measures, nodeID, columnKey);
                     else
                     {
-                        CellType cellType = (isLeafNode && child.CellType == CellType.GroupHeader) ? CellType.Measure : (dimension.IsRow || child.CellType == CellType.GrandTotalHeader) ? CellType.GrandTotal : CellType.Total;
+                        CellType cellType = (isLeafNode && child.CellType == CellType.GroupHeader) ? CellType.Measure : (displayGrandTotals && (dimension.IsRow || child.CellType == CellType.GrandTotalHeader)) ? CellType.GrandTotal : CellType.Total;
                         columnKey = cellType == CellType.GrandTotal && (child.CellType != CellType.GrandTotalHeader) ? CellType.GrandTotal.ToString() : columnKey;
-                        CreateMeasures(child, measures, dimension, measureData, nodeID, columnKey, cellType); // Build column measures, totals, and grand totals
+                        
+                        if(cellType != CellType.GrandTotal || (cellType == CellType.GrandTotal && displayGrandTotals))
+                            CreateMeasures(child, measures, dimension, measureData, nodeID, columnKey, cellType); // Build column measures, totals, and grand totals
                     }
                 }
                 else if (dimension.IsRow || buildHeaders)
@@ -117,7 +119,9 @@ namespace LeaderAnalytics.LeaderPivot
             else
             {
                 BuildNodes(total, measureData.Measure, dimensions.Skip(1).Where(x => !x.IsRow), measures);
-                CreateMeasures(total, measures, dimension, measureData, nodeID, CellType.GrandTotal.ToString(), CellType.GrandTotal);
+
+                if(displayGrandTotals)
+                    CreateMeasures(total, measures, dimension, measureData, nodeID, CellType.GrandTotal.ToString(), CellType.GrandTotal);
             }
         }
 
@@ -201,6 +205,13 @@ namespace LeaderAnalytics.LeaderPivot
                 MeasureDatas[dimension.Ordinal] = measureData;
 
             return measureData;
+        }
+
+        private void Init()
+        {
+            NodeIDs = new List<string>();
+            ColumnKeys = new List<string>();
+            MeasureDatas = new List<MeasureData<T>>();
         }
     }
 }

@@ -124,12 +124,9 @@ namespace TestData
                 
                 new Measure<SalesData> { Aggragate = x => 
                 {
-                    int measure_qty = x.Measure.Sum(x => x.Quantity); //14
-                    int group_qty = x.RowGroup?.Sum(x => x.Quantity) ?? 0; // 61
-                    int col_qty = x.ColumnGroup?.Sum(x => x.Quantity) ?? 0; //36
                     return ((x.ColumnGroup?.Sum(y => y.Quantity) ?? 0) == 0) ? 1m :  x.Measure.Sum(y => y.Quantity) / (decimal)x.ColumnGroup.Sum(z => z.Quantity);
                     
-                }, DisplayValue = "Quantity % of Column", Format="{0:P}", Sequence = 2, IsEnabled = true
+                }, DisplayValue = "Quantity % of Column", Format="{0:P}", Sequence = 2, IsEnabled = false
                 
                 },
 
@@ -141,7 +138,7 @@ namespace TestData
                         decimal result = (x.RowGroup?.Sum(y => y.Quantity * y.UnitPrice) ?? 0) == 0 ? 1m :  x.Measure.Sum(y => y.Quantity * y.UnitPrice) / ((decimal)x.RowGroup.Sum(y => y.Quantity * y.UnitPrice));
                         return result;
                     
-                    } , DisplayValue = "Revenue % of Row" , Format="{0:P}", Sequence = 3, IsEnabled = true 
+                    } , DisplayValue = "Revenue % of Row" , Format="{0:P}", Sequence = 3, IsEnabled = false
                 },
                
                 new Measure<SalesData> { Aggragate = x => x.Measure.Sum(y => y.Quantity * y.UnitPrice), DisplayValue = "Revenue", Format="{0:C}", Sequence = 3, IsEnabled = true },
