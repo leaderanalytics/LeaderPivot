@@ -8,4 +8,8 @@
     <ProjectReference Include="..\LeaderPivot\LeaderPivot.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <RootNamespace>LeaderAnalytics.LeaderPivot.TestData</RootNamespace>
+    <AssemblyName>LeaderAnalytics.LeaderPivot.TestData</AssemblyName>
+  </PropertyGroup>
 </Project>

@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TestData;
+using LeaderAnalytics.LeaderPivot.TestData;
 
 namespace WebDemo.Pages
 {
@@ -25,7 +25,7 @@ namespace WebDemo.Pages
         {
             SalesDataService salesDataService = new SalesDataService();
             List<SalesData> salesData = salesDataService.GetSalesData();
-            List<Dimension<SalesData>> dimensions = salesDataService.LoadSalesDataDimensions();
+            List<Dimension<SalesData>> dimensions = salesDataService.LoadDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
             displayGrandTotals = true;
             NodeBuilder<SalesData> nodeBuilder = new NodeBuilder<SalesData>(NodeCache<SalesData>.Instance);

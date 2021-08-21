@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using TestData;
+using LeaderAnalytics.LeaderPivot.TestData;
 
 namespace ConsoleDemo
 {
@@ -24,7 +24,7 @@ namespace ConsoleDemo
             Console.Clear();
             SalesDataService salesDataService = new SalesDataService();
             List<SalesData> salesData = salesDataService.GetSalesData();
-            List<Dimension<SalesData>> dimensions = salesDataService.LoadSalesDataDimensions();
+            List<Dimension<SalesData>> dimensions = salesDataService.LoadDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
             bool displayGrandTotals = true;
             Validator<SalesData> validator = new Validator<SalesData>();
@@ -40,7 +40,7 @@ namespace ConsoleDemo
             Console.Clear();
             SalesDataService salesDataService = new SalesDataService();
             List<SalesData> salesData = salesDataService.GetSalesData();
-            List<Dimension<SalesData>> dimensions = salesDataService.LoadSalesDataDimensions();
+            List<Dimension<SalesData>> dimensions = salesDataService.LoadDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
             bool displayGrandTotals = true;
             Validator<SalesData> validator = new Validator<SalesData>();

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TestData
+namespace LeaderAnalytics.LeaderPivot.TestData
 {
 
     public class SalesData
@@ -24,7 +24,7 @@ namespace TestData
     {
         private string[] Months = new string[12] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec",};
 
-        public List<Dimension<SalesData>> LoadSalesDataDimensions()
+        public List<Dimension<SalesData>> LoadDimensions()
         {
             // Must have at least one row and at least one column dimension
 

@@ -36,7 +36,6 @@ namespace LeaderAnalytics.LeaderPivot
         public Matrix BuildMatrix(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
         {
             this.data = data;
-            this.measures = measures;
             this.DisplayGrandTotals = displayGrandTotals;
             validator.Validate(data, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);
