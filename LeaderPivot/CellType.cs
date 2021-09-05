@@ -15,9 +15,10 @@ namespace LeaderAnalytics.LeaderPivot
         Measure,            // A leaf node value - often a group sum.
         Total,              // An aggregate of more or more Measures
         GrandTotal,         // Yep it's that
-        MeasureHeader,      // Header for a Measure
+        MeasureLabel,       // Label for a Measure
+        MeasureTotalLabel,  // Label for a Measure in a total column
         GroupHeader,        // Header for a group which contain one or more Measures
-        TotalHeader,        // Header for a total row
-        GrandTotalHeader    // Header for a grand total
+        TotalHeader,        // Header for a total row or column
+        GrandTotalHeader    // Header for a grand total row or column
     }
 }

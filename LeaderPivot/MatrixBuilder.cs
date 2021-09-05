@@ -84,12 +84,12 @@ namespace LeaderAnalytics.LeaderPivot
 
                 // Add row zero.  Add a cell to that row at 0,0 spanning row headers and column headers.
                 MatrixRow row = new MatrixRow();
-                row.Cells.Add(new MatrixCell(CellType.MeasureHeader, headerHeight, columnSpan));
+                row.Cells.Add(new MatrixCell(CellType.MeasureLabel, headerHeight, columnSpan));
                 t.Rows.Add(row);
 
                 // Add a second cell to row zero that is as wide as the number of leaf node columns in node.
 
-                row.Cells.Add(new MatrixCell(CellType.MeasureHeader, 1, totalWidth));
+                row.Cells.Add(new MatrixCell(CellType.MeasureLabel, 1, totalWidth));
 
                 // Add remaining rows to display column headers.  We have already added one.
                 for (int i = 0; i < headerHeight - 1; i++)
@@ -103,7 +103,7 @@ namespace LeaderAnalytics.LeaderPivot
             int colSpan = 1;
             int rowIndex = headerHeight - headerDepth;
 
-            if (node.CellType != CellType.MeasureHeader)
+            if (node.CellType != CellType.MeasureLabel && node.CellType != CellType.MeasureTotalLabel)
             {
                 rowSpan = peerDepth - headerDepth;
                 colSpan = node.IsExpanded ? GetLeafNodeCount(node, false) : measures.Count();
@@ -167,9 +167,11 @@ namespace LeaderAnalytics.LeaderPivot
                     if (!ColumnIndexDict.TryGetValue(child.CellKey, out colIndex))
                         continue; // Column data will not be found if column is collapsed.
 
+                    CellType childCellType = node.CellType == CellType.GroupHeader ? CellType.Measure : node.CellType == CellType.TotalHeader ? CellType.Total : CellType.GrandTotal;
+
                     while (colCount < colIndex)
                     {
-                        t.Rows[rowIndex].Cells.Add(new MatrixCell(CellType.Measure, rowSpan, colSpan));
+                        t.Rows[rowIndex].Cells.Add(new MatrixCell(childCellType, rowSpan, colSpan));
                         colCount++;
                     }
 

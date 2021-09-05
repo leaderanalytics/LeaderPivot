@@ -80,7 +80,7 @@ namespace LeaderAnalytics.LeaderPivot
                     // Create measures on leaf nodes
 
                     if (buildHeaders)
-                        CreateMeasureHeaders(child, measures, nodeID, columnKey);
+                        CreateMeasureLabels(child, measures, nodeID, columnKey);
                     else
                     {
                         CellType cellType = (isLeafNode && child.CellType == CellType.GroupHeader) ? CellType.Measure : (displayGrandTotals && (dimension.IsRow || child.CellType == CellType.GrandTotalHeader)) ? CellType.GrandTotal : CellType.Total;
@@ -115,7 +115,7 @@ namespace LeaderAnalytics.LeaderPivot
             parentNode.Children.Add(total);
 
             if (buildHeaders)
-                CreateMeasureHeaders(total, measures, nodeID, columnKey);
+                CreateMeasureLabels(total, measures, nodeID, columnKey);
             else
             {
                 BuildNodes(total, measureData.Measure, dimensions.Skip(1).Where(x => !x.IsRow), measures);
@@ -136,12 +136,14 @@ namespace LeaderAnalytics.LeaderPivot
             }
         }
 
-        private void CreateMeasureHeaders(Node<T> parentNode, IEnumerable<Measure<T>> measures, string nodeID, string columnKey)
+        private void CreateMeasureLabels(Node<T> parentNode, IEnumerable<Measure<T>> measures, string nodeID, string columnKey)
         {
-            // Measure headers are always expanded and are always displayed as column headers - never as row headers.
+            // Measure labels are always expanded and are always displayed as column headers - never as row headers.
+            CellType measureCellType = parentNode.CellType == CellType.TotalHeader || parentNode.CellType == CellType.GrandTotalHeader ? CellType.MeasureTotalLabel : CellType.MeasureLabel;
+
             foreach (Measure<T> measure in measures)
             {
-                Node<T> measureHeader = nodeCache.Get(nodeID + measure.DisplayValue + "Header", parentNode.Dimension, CellType.MeasureHeader, columnKey + measure.DisplayValue, measure.DisplayValue, false, true);
+                Node<T> measureHeader = nodeCache.Get(nodeID + measure.DisplayValue + "Header", parentNode.Dimension, measureCellType, columnKey + measure.DisplayValue, measure.DisplayValue, false, true);
                 parentNode.Children.Add(measureHeader);
             }
         }
