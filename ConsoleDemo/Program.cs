@@ -13,7 +13,7 @@ namespace ConsoleDemo
 
         static void Main(string[] args)
         {
-            nodeBuilder = new NodeBuilder<SalesData>(NodeCache<SalesData>.Instance);
+            nodeBuilder = new NodeBuilder<SalesData>();
             DisplaySalesDataDataGraph();
             DisplaySalesDataHeaderGraph();
         }
@@ -31,7 +31,7 @@ namespace ConsoleDemo
             validator.Validate(salesData, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
-            Node<SalesData> dataNode = nodeBuilder.Build(salesData, dimensions, measures, displayGrandTotals);
+            Node<SalesData> dataNode = nodeBuilder.Build(salesData, dimensions, measures);
             DisplayGraph(dataNode);
         }
 
@@ -47,8 +47,8 @@ namespace ConsoleDemo
             validator.Validate(salesData, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
-            Node<SalesData> columnHeaderNode = nodeBuilder.BuildColumnHeaders(salesData, dimensions, measures, displayGrandTotals);
-            DisplayGraph(columnHeaderNode);
+            //Node<SalesData> columnHeaderNode = nodeBuilder.BuildColumnHeaders(salesData, dimensions, measures, displayGrandTotals);
+            //DisplayGraph(columnHeaderNode);
         }
 
         static void DisplayGraph(Node<SalesData> v)
@@ -58,12 +58,11 @@ namespace ConsoleDemo
                     "Level".PadRight(10) +
                     "Value".PadRight(20) +
                     "CellKey".PadRight(30) +
-                    "CellType".PadRight(20) +
-                    "Dim DisplayValue".PadRight(20) +
+                    "RowTotalType".PadRight(20) +
+                    "Row Dim DisplayValue".PadRight(20) +
                     "IsRow".PadRight(8) +
                     "IsExp".PadRight(8) +
                     "ID".PadRight(30)
-
                     );
 
             _DisplayGraph(v, 0);
@@ -72,7 +71,7 @@ namespace ConsoleDemo
 
 
         static void _DisplayGraph(Node<SalesData> v, int level)
-        {
+        {   
             if (v.CellType != CellType.Root)
             {
                 Console.WriteLine(
@@ -80,15 +79,16 @@ namespace ConsoleDemo
                     v.Value?.ToString()?.PadRight(20) +
                     v.CellKey?.PadRight(30) +
                     v.CellType.ToString().PadRight(20) +
-                    v.Dimension.DisplayValue.PadRight(20) +
+                    v.RowDimension.DisplayValue.PadRight(20) +
                     (v.IsRow ? "Y" : "N").PadRight(8) +
                     (v.IsExpanded ? "Y" : "N").PadRight(8) +
                     v.ID.PadRight(30)
-
                     );
             }
-            foreach (Node<SalesData> c in v.Children)
-                _DisplayGraph(c, level + 1);
+            
+            if(v.Children?.Any()?? false)
+                foreach (Node<SalesData> c in v.Children)
+                    _DisplayGraph(c, level + 1);
 
         }
     }

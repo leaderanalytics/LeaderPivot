@@ -11,14 +11,26 @@ namespace LeaderAnalytics.LeaderPivot
     /// <typeparam name="T"></typeparam>
     public class Node<T> : Node
     {
-        public Dimension<T> Dimension { get; set; }
+        public Dimension<T> RowDimension { get; set; }
+        public Dimension<T> ColumnDimension { get; set; }
         public List<Node<T>> Children { get; set; }
 
-        public Node(string id, Dimension<T> dimension)
+        public Node(string id, Dimension<T> rowDimension, Dimension<T> columnDimension, object val, CellType cellType, string cellKey = null)
         {
             ID = id ?? throw new Exception(nameof(id));
-            Dimension = dimension ?? throw new Exception(nameof(dimension));
-            Children = new List<Node<T>>();
+            RowDimension = rowDimension ;
+            ColumnDimension = columnDimension;
+            Value = val;
+            CellType = cellType;
+            CellKey = cellKey;
+        }
+
+        public void AddChild(Node<T> child)
+        {
+            if (Children == null)
+                Children = new List<Node<T>>();
+            
+            Children.Add(child);
         }
     }
 
@@ -26,16 +38,23 @@ namespace LeaderAnalytics.LeaderPivot
     public abstract class Node
     {
         private bool _IsExpanded;
-        public string ID { get; set; }                  // Uniquely identifies this node.
+        public string ID { get; set; }                  // Uniquely identifies this node. [RowDimID:Key][ColDimID:Key][MeasureID]
+        //public CellType CellType { get; set; }
         public CellType CellType { get; set; }
         public string CellKey { get; set; }             // Identifies which column a cell should be rendered in, since not all nodes have identical hierarchies.  Not unique.  Not the same as ID.
         public object Value { get; set; }
         public bool IsRow { get; set; }                 // Not always the same as the dimension, notably grand totals.
         public bool IsExpanded 
         {
-            get => CellType == CellType.GroupHeader ? _IsExpanded : true;
+            get => _IsExpanded ;
             set => _IsExpanded = value;
         }
-        public bool CanToggleExapansion { get; set; }   // User can not toggle expansion on leaf dimensions (last dimension for each axis).  Also, IsExpanded must be true for leaf dimensions.
+        public bool CanToggleExapansion { get; set; }   // User can not toggle expansion on leaf dimensions (last dimension for each axis).  
+
+
+        public static string CreateID(string dimensionID, string grpValue)
+        {
+            return $"[{dimensionID}:{grpValue}]";
+        }
     }
 }

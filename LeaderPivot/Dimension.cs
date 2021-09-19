@@ -6,6 +6,7 @@ namespace LeaderAnalytics.LeaderPivot
     {
         private bool _isExpanded;
         private bool _canToggleExpansion = true;
+        public string ID => DisplayValue;
 
         /// <summary>
         /// A friendly value that identifies how the data will be grouped i.e. City, Product Name, etc.  This value is displayed on the button that allows the user to reposition the dimension.

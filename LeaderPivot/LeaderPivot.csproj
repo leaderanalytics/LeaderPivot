@@ -29,14 +29,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="MatrixBuilder.cs" />
+    <Compile Remove="NodeBuilder_v1.cs" />
+    <Compile Remove="NodeCache.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\logo-xsmall.png" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <Target Name="CopyPackage" AfterTargets="Pack">
-    <Copy
-      SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg"
-      DestinationFolder="c:\NugetPackages\"
-    />
+    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="c:\NugetPackages\" />
   </Target>
 </Project>

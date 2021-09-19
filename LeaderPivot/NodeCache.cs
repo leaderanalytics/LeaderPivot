@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// https://docs.microsoft.com/en-us/aspnet/core/performance/objectpool?view=aspnetcore-3.1
+
 namespace LeaderAnalytics.LeaderPivot
 {
     public class NodeCache<T>
@@ -27,7 +29,7 @@ namespace LeaderAnalytics.LeaderPivot
             cache = new Dictionary<string, Node<T>>();
         }
 
-        public Node<T> Get(string nodeID, Dimension<T> dimension, CellType cellType, string cellKey, object value, bool isRow, bool isExpanded)
+        public Node<T> Get(Dimension<T> rowDimension, Dimension<T> columnDmension, Measure<T> measure, object value, bool isRow)
         {
             cache.TryGetValue(nodeID, out Node<T> node);
 
