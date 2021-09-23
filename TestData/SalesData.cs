@@ -120,13 +120,13 @@ namespace LeaderAnalytics.LeaderPivot.TestData
         {
             List<Measure<SalesData>> measures = new List<Measure<SalesData>>
             {
-                new Measure<SalesData> { Aggragate = x => x.Measure.Sum(y => y.Quantity), DisplayValue = "Quantity", Format="{0:n0}", Sequence = 2, IsEnabled = true },
+                new Measure<SalesData> { Aggragate = x => x.Measure.Sum(y => y.Quantity), DisplayValue = "Quantity", Format="{0:n0}", Sequence = 1, IsEnabled = true },
                 
                 new Measure<SalesData> { Aggragate = x => 
                 {
                     return ((x.ColumnGroup?.Sum(y => y.Quantity) ?? 0) == 0) ? 1m :  x.Measure.Sum(y => y.Quantity) / (decimal)x.ColumnGroup.Sum(z => z.Quantity);
                     
-                }, DisplayValue = "Quantity % of Column", Format="{0:P}", Sequence = 2, IsEnabled = false
+                }, DisplayValue = "Quantity % of Column", Format="{0:P}", Sequence = 4, IsEnabled = false
                 
                 },
 
@@ -138,11 +138,11 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                         decimal result = (x.RowGroup?.Sum(y => y.Quantity * y.UnitPrice) ?? 0) == 0 ? 1m :  x.Measure.Sum(y => y.Quantity * y.UnitPrice) / ((decimal)x.RowGroup.Sum(y => y.Quantity * y.UnitPrice));
                         return result;
                     
-                    } , DisplayValue = "Revenue % of Row" , Format="{0:P}", Sequence = 3, IsEnabled = false
+                    } , DisplayValue = "Revenue % of Row" , Format="{0:P}", Sequence = 5, IsEnabled = false
                 },
                
-                new Measure<SalesData> { Aggragate = x => x.Measure.Sum(y => y.Quantity * y.UnitPrice), DisplayValue = "Revenue", Format="{0:C}", Sequence = 3, IsEnabled = true },
-                new Measure<SalesData> { Aggragate = x => x.Measure.Count(), DisplayValue = "Count", Format="{0:n0}", Sequence = 1, IsEnabled = true}
+                new Measure<SalesData> { Aggragate = x => x.Measure.Sum(y => y.Quantity * y.UnitPrice), DisplayValue = "Revenue", Format="{0:C}", Sequence = 2, IsEnabled = true },
+                new Measure<SalesData> { Aggragate = x => x.Measure.Count(), DisplayValue = "Count", Format="{0:n0}", Sequence = 3, IsEnabled = true}
             };
             return measures;
         }

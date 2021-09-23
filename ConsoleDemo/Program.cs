@@ -79,7 +79,7 @@ namespace ConsoleDemo
                     v.Value?.ToString()?.PadRight(20) +
                     v.CellKey?.PadRight(30) +
                     v.CellType.ToString().PadRight(20) +
-                    v.RowDimension.DisplayValue.PadRight(20) +
+                    v.RowDimension?.DisplayValue.PadRight(20) +
                     (v.IsRow ? "Y" : "N").PadRight(8) +
                     (v.IsExpanded ? "Y" : "N").PadRight(8) +
                     v.ID.PadRight(30)
