@@ -17,9 +17,8 @@ namespace LeaderAnalytics.LeaderPivot
     public class NodeBuilder<T>
     {
         private List<Measure<T>> Measures { get; set; }
-        private List<Dimension<T>> RowDimensions { get; set; }
-        private List<Dimension<T>> ColDimensions { get; set; }
         private MeasureData<T>[] MeasureDatas;
+        private bool buildHeaders;
 
         public NodeBuilder()
         {
@@ -27,16 +26,22 @@ namespace LeaderAnalytics.LeaderPivot
 
         public Node<T> Build(IEnumerable<T> data, List<Dimension<T>> dimensions, List<Measure<T>> measures)
         {
-            RowDimensions = dimensions.Where(x => x.IsRow).OrderBy(x => x.Sequence).ToList();
-            ColDimensions = dimensions.Where(x => !x.IsRow).OrderBy(x => x.Sequence).ToList();
             Measures = measures;
-            MeasureDatas = new MeasureData<T>[RowDimensions.Count + ColDimensions.Count];
-            Node<T> root = new Node<T>(Guid.NewGuid().ToString(), null, null, null);
+            MeasureDatas = new MeasureData<T>[dimensions.Count];
+            Node<T> root = new Node<T>(Guid.NewGuid().ToString(),null, null, null, CellType.Root);
             BuildNodes(root, dimensions, data);
             return root;
         }
 
-        protected void BuildNodes(Node<T> parent, List<Dimension<T>> dimensions, IEnumerable<T> data)
+        public Node<T> BuildColumnHeaders(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures)
+        {
+            buildHeaders = true;
+            Node<T> root = new Node<T>(Guid.NewGuid().ToString(), null, null, null, CellType.Root);
+            BuildNodes(root, dimensions.Where(x => !x.IsRow).ToList(), data);
+            return root;
+        }
+
+        private void BuildNodes(Node<T> parent, List<Dimension<T>> dimensions, IEnumerable<T> data)
         {
             if (!(dimensions?.Any() ?? false))
                 return;
@@ -50,14 +55,12 @@ namespace LeaderAnalytics.LeaderPivot
                 Dimension<T> rowDim = dim.IsRow ? dim : parent.RowDimension;
                 Dimension<T> colDim = dim.IsRow ? parent.ColumnDimension : dim;
 
-                if (dim.IsRow || dim.IsLeaf)
+                if (dim.IsRow || buildHeaders) // if (dim.IsRow || dim.IsLeaf)
                 {
                     string nodeID = Node.CreateID(dim.ID, grp.Key);
-                    node = new Node<T>(nodeID, rowDim, colDim, grp.Key, CellType.GroupHeader);
+                    node = new Node<T>(nodeID, rowDim, colDim, DisplayValue(dim, grp.First()), CellType.GroupHeader);
                     node.IsRow = dim.IsRow;
-
-                    if (dim.IsRow)
-                        parent.AddChild(node);
+                    parent.AddChild(node);
                 }
                 else
                 {
@@ -70,7 +73,7 @@ namespace LeaderAnalytics.LeaderPivot
                 {
                     BuildNodes(node, dimensions.Skip(1).ToList(), grp);
 
-                    if (dim.IsRow) 
+                    if (dim.IsRow || buildHeaders) 
                     {
                         MeasureData<T> measureData = null;
 
@@ -80,19 +83,29 @@ namespace LeaderAnalytics.LeaderPivot
                             string nodeID = Node.CreateID(dim.ID, nodeVal.ToString());
                             node = new Node<T>(nodeID, dim, node.ColumnDimension, nodeVal, CellType.TotalHeader);
                             parent.AddChild(node);
-                            BuildNodes(node, dimensions.Where(x => !x.IsRow).ToList(), grp);
+                            
+                            if(!buildHeaders)
+                                BuildNodes(node, dimensions.Where(x => !x.IsRow).ToList(), grp);
                         }
-
-                        measureData = BuildMeasureData(node, grp, data, dim); // Append Grand Totals column to each row
-                        BuildMeasures(node, parent, measureData, CellType.GrandTotal);
+                        
+                        if(!buildHeaders)
+                        {
+                            measureData = BuildMeasureData(node, grp, data, dim); // Append Grand Totals column to each row
+                            BuildMeasures(node, parent, measureData, CellType.GrandTotal);
+                        }
                     }
                 }
 
                 if (!dim.IsRow)
                 {
-                    CellType cellType = parent.CellType == CellType.GroupHeader ? CellType.Measure : parent.CellType == CellType.TotalHeader ? CellType.Total : CellType.GrandTotal;
-                    MeasureData<T> measureData = BuildMeasureData(node, grp, data, dim);
-                    BuildMeasures(parent, node, measureData, cellType);
+                    if (buildHeaders)
+                        CreateMeasureLabels(node);
+                    else
+                    {
+                        CellType cellType = parent.CellType == CellType.GroupHeader ? CellType.Measure : parent.CellType == CellType.TotalHeader ? CellType.Total : CellType.GrandTotal;
+                        MeasureData<T> measureData = BuildMeasureData(node, grp, data, dim);
+                        BuildMeasures(parent, node, measureData, cellType);
+                    }
                 }
             }
 
@@ -101,7 +114,15 @@ namespace LeaderAnalytics.LeaderPivot
                 string nodeID = Node.CreateID(dim.ID, Guid.NewGuid().ToString());
                 node = new Node<T>(nodeID, dim, node.ColumnDimension, "Grand Total", CellType.GrandTotalHeader);
                 parent.AddChild(node);
-                BuildNodes(node, dimensions.Where(x => !x.IsRow).ToList(), data);
+
+                if (buildHeaders)
+                    CreateMeasureLabels(node);
+                else
+                {
+                    BuildNodes(node, dimensions.Where(x => !x.IsRow).ToList(), data);
+                    MeasureData<T> measureData = BuildMeasureData(node, data, data, dim); // Grand Totals column 
+                    BuildMeasures(node, parent, measureData, CellType.GrandTotal);
+                }
             }
         }
 
@@ -117,14 +138,14 @@ namespace LeaderAnalytics.LeaderPivot
             }
         }
 
-        private void CreateMeasureLabels(Node<T> parentNode)
+        private void CreateMeasureLabels(Node<T> parent)
         {
-            // Measure labels are always expanded and are always displayed as column headers - never as row headers.
-            
+            CellType cellType = parent.CellType == CellType.GroupHeader ? CellType.MeasureLabel :  CellType.MeasureTotalLabel;
+
             foreach (Measure<T> measure in Measures)
             {
-                Node<T> labelNode = new Node<T>(parentNode.ID + "Label", parentNode.RowDimension, parentNode.ColumnDimension, measure.DisplayValue, null, parentNode.totalType, true);
-                parentNode.AddChild(labelNode);
+                Node<T> labelNode = new Node<T>(parent.ID + "Label", parent.RowDimension, parent.ColumnDimension, measure.DisplayValue, cellType);
+                parent.AddChild(labelNode);
             }
         }
 
@@ -162,6 +183,7 @@ namespace LeaderAnalytics.LeaderPivot
         }
 
         private string SortValue(Dimension<T> dimension, string data) => dimension.SortValue == null ? data : dimension.SortValue(data);
+
         private string DisplayValue(Dimension<T> dimension, T data) => dimension.HeaderValue == null ? dimension.GroupValue(data) : dimension.HeaderValue(data);
     }
 

@@ -47,8 +47,8 @@ namespace ConsoleDemo
             validator.Validate(salesData, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
-            //Node<SalesData> columnHeaderNode = nodeBuilder.BuildColumnHeaders(salesData, dimensions, measures, displayGrandTotals);
-            //DisplayGraph(columnHeaderNode);
+            Node<SalesData> columnHeaderNode = nodeBuilder.BuildColumnHeaders(salesData, dimensions, measures);
+            DisplayGraph(columnHeaderNode);
         }
 
         static void DisplayGraph(Node<SalesData> v)
@@ -79,7 +79,7 @@ namespace ConsoleDemo
                     v.Value?.ToString()?.PadRight(20) +
                     v.CellKey?.PadRight(30) +
                     v.CellType.ToString().PadRight(20) +
-                    v.RowDimension.DisplayValue.PadRight(20) +
+                    v.RowDimension?.DisplayValue.PadRight(20) +
                     (v.IsRow ? "Y" : "N").PadRight(8) +
                     (v.IsExpanded ? "Y" : "N").PadRight(8) +
                     v.ID.PadRight(30)
