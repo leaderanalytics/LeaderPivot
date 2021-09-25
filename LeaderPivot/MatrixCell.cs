@@ -29,7 +29,7 @@ namespace LeaderAnalytics.LeaderPivot
         public MatrixCell(Node node, int rowSpan = 1, int colSpan = 1)
         {
             Value = node.Value;
-            NodeID = node.ID;
+            NodeID = null;
             IsExpanded = node.IsExpanded;
             CanToggleExapansion = node.CanToggleExapansion;
             RowSpan = rowSpan;

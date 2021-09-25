@@ -57,12 +57,11 @@ namespace ConsoleDemo
             Console.WriteLine(
                     "Level".PadRight(10) +
                     "Value".PadRight(20) +
-                    "CellKey".PadRight(30) +
-                    "RowTotalType".PadRight(20) +
-                    "Row Dim DisplayValue".PadRight(20) +
+                    "CellType".PadRight(20) +
+                    "Row Dim DisplayValue".PadRight(30) +
                     "IsRow".PadRight(8) +
                     "IsExp".PadRight(8) +
-                    "ID".PadRight(30)
+                    "ColumnKey".PadRight(30) 
                     );
 
             _DisplayGraph(v, 0);
@@ -77,12 +76,11 @@ namespace ConsoleDemo
                 Console.WriteLine(
                     new String('*', level).PadRight(10) +
                     v.Value?.ToString()?.PadRight(20) +
-                    v.CellKey?.PadRight(30) +
                     v.CellType.ToString().PadRight(20) +
-                    v.RowDimension?.DisplayValue.PadRight(20) +
+                    (v.RowDimension?.DisplayValue.PadRight(30) ?? new String(' ', 30)) +
                     (v.IsRow ? "Y" : "N").PadRight(8) +
                     (v.IsExpanded ? "Y" : "N").PadRight(8) +
-                    v.ID.PadRight(30)
+                    v.ColumnKey?.PadRight(30) 
                     );
             }
             
