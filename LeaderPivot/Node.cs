@@ -14,19 +14,30 @@ namespace LeaderAnalytics.LeaderPivot
         public Dimension<T> RowDimension { get; set; }
         public Dimension<T> ColumnDimension { get; set; }
         public List<Node<T>> Children { get; set; }
-        public bool isGrandTotal;
+        public TotalType totalType;
         public bool isLabel;
 
-        public Node(string id, Dimension<T> rowDimension, Dimension<T> columnDimension, object val, string cellKey = null, bool isGrandTotal=false, bool isLabel=false)
+        public Node(string id, Dimension<T> rowDimension, Dimension<T> columnDimension, object val, string cellKey = null, TotalType totalType = TotalType.None, bool isLabel = false)
         {
             ID = id ?? throw new Exception(nameof(id));
             RowDimension = rowDimension ;
             ColumnDimension = columnDimension;
             Value = val;
             CellKey = cellKey;
-            this.isGrandTotal = isGrandTotal;
+            this.totalType = totalType;
             this.isLabel = isLabel;
             SetCellType();
+        }
+
+
+        public Node(string id, Dimension<T> rowDimension, Dimension<T> columnDimension, object val, CellType cellType, string cellKey = null)
+        {
+            ID = id ?? throw new Exception(nameof(id));
+            RowDimension = rowDimension;
+            ColumnDimension = columnDimension;
+            Value = val;
+            CellKey = cellKey;
+            CellType = cellType;
         }
 
         public void AddChild(Node<T> child)
@@ -41,13 +52,13 @@ namespace LeaderAnalytics.LeaderPivot
         {
             if (RowDimension is null && ColumnDimension is null)
                 CellType = CellType.Root;
-            else if (RowDimension is null)
-                CellType = isGrandTotal ? CellType.GrandTotalHeader : ColumnDimension.IsLeaf ? CellType.GroupHeader : CellType.GrandTotalHeader;
-            else if (ColumnDimension is null)
-                CellType = isGrandTotal ? CellType.GrandTotalHeader : RowDimension.IsLeaf ? CellType.GroupHeader : CellType.GrandTotalHeader;
-            else if (isGrandTotal)
+            else if (RowDimension is null || ColumnDimension is null)
+                CellType = totalType == TotalType.GrandTotal ? CellType.GrandTotalHeader : totalType == TotalType.Total ? CellType.TotalHeader : CellType.GroupHeader;
+            else if(isLabel)
+                CellType = totalType == TotalType.None ? CellType.MeasureLabel : CellType.MeasureTotalLabel;
+            else if (totalType == TotalType.GrandTotal)
                 CellType = CellType.GrandTotal;
-            else if (!RowDimension.IsLeaf || ColumnDimension.IsLeaf)
+            else if (totalType == TotalType.Total)
                 CellType = CellType.Total;
             else
                 CellType = CellType.Measure;
