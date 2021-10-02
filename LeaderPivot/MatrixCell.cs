@@ -13,28 +13,28 @@ namespace LeaderAnalytics.LeaderPivot
         public int RowSpan { get; set; }
         public int ColSpan { get; set; }
         public string NodeID { get; set; }
-        public bool IsExpanded { get; set; }
+        public bool IsExpanded { get; set; } = true;
         public bool CanToggleExapansion { get; set; }
 
         public MatrixCell() => RowSpan = ColSpan = 1;
 
-        public MatrixCell(CellType cellType, int rowSpan = 1, int colSpan = 1)
+        public MatrixCell(CellType cellType, int rowSpan = 1, int colSpan = 1, bool isExpanded = true)
         {
             CellType = cellType;
-            IsExpanded = true;
             RowSpan = rowSpan;
             ColSpan = colSpan;
+            IsExpanded = isExpanded;
         }
 
-        public MatrixCell(Node node, int rowSpan = 1, int colSpan = 1)
+        public MatrixCell(Node node, int rowSpan = 1, int colSpan = 1, bool isExpanded = true)
         {
             Value = node.Value;
             CellType = node.CellType;
             NodeID = node.ID;
-            IsExpanded = node.IsExpanded;
             CanToggleExapansion = node.CanToggleExapansion;
             RowSpan = rowSpan;
             ColSpan = colSpan;
+            IsExpanded = isExpanded;
         }
     }
 }

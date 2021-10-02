@@ -61,8 +61,8 @@ namespace ConsoleDemo
                     "Row Dim DisplayValue".PadRight(30) +
                     "Col Dim DisplayValue".PadRight(30) +
                     "IsRow".PadRight(8) +
-                    "IsExp".PadRight(8) +
-                    "ColumnKey".PadRight(30) 
+                    "ColumnKey".PadRight(30) +
+                    "Node ID".PadRight(30)
                     );
 
             _DisplayGraph(v, 0);
@@ -81,8 +81,8 @@ namespace ConsoleDemo
                     (v.RowDimension?.DisplayValue.PadRight(30) ?? new String(' ', 30)) +
                     (v.ColumnDimension?.DisplayValue.PadRight(30) ?? new String(' ', 30)) +
                     (v.IsRow ? "Y" : "N").PadRight(8) +
-                    (v.IsExpanded ? "Y" : "N").PadRight(8) +
-                    v.ColumnKey?.PadRight(30) 
+                    (v.ColumnKey?.PadRight(30) ?? new String(' ', 30)) +
+                    v.ID?.PadRight(30)
                     );
             }
             

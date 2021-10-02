@@ -22,6 +22,7 @@ namespace LeaderAnalytics.LeaderPivot
         private int headerHeight;   // Total number of column header rows including one topmost empty row. Also includes measure headers.
         private int headerWidth;    // Total number of row header columns   
         private Dictionary<string, int> ColumnIndexDict;
+        private HashSet<string> CollapsedNodeDict;
         private NodeBuilder<T> nodeBuilder;
         private Validator<T> validator;
         private bool fillCollapsedCell;
@@ -32,6 +33,7 @@ namespace LeaderAnalytics.LeaderPivot
             this.validator = validator ?? throw new ArgumentNullException(nameof(validator));
             this.nodeBuilder = nodeBuilder ?? throw new ArgumentNullException(nameof(nodeBuilder));    
             ColumnIndexDict = new Dictionary<string, int>();
+            CollapsedNodeDict = new HashSet<string>();
         }
         
         public Matrix BuildMatrix(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
@@ -49,8 +51,10 @@ namespace LeaderAnalytics.LeaderPivot
 
         public Matrix ToggleNodeExpansion(string nodeID)
         {
-            if (!_ToggleNodeExpansion(nodeID, dataNode))
-                _ToggleNodeExpansion(nodeID, columnHeaderNode);
+            if (CollapsedNodeDict.Contains(nodeID))
+                CollapsedNodeDict.Remove(nodeID);
+            else
+                CollapsedNodeDict.Add(nodeID);
 
             return buildMatrix();
         }
@@ -99,7 +103,7 @@ namespace LeaderAnalytics.LeaderPivot
                 index = 1;  // Don't add any cells to row 0.
             }
 
-            int headerDepth = GetHeaderDepth(node, false, 0) + (node.IsExpanded ? 0 : 1);
+            int headerDepth = GetHeaderDepth(node, false, 0) + (IsNodeExpanded(node.ID) ? 0 : 1);
             int rowSpan = 1;
             int colSpan = 1;
             int rowIndex = headerHeight - headerDepth;
@@ -107,7 +111,7 @@ namespace LeaderAnalytics.LeaderPivot
             if (node.CellType != CellType.MeasureLabel && node.CellType != CellType.MeasureTotalLabel)
             {
                 rowSpan = peerDepth - headerDepth;
-                colSpan = node.IsExpanded ? GetLeafNodeCount(node, false) : measures.Count();
+                colSpan = IsNodeExpanded(node.ID) ? GetLeafNodeCount(node, false) : measures.Count();
             }
             else
                 ColumnIndexDict.Add(node.ColumnKey, t.Rows[rowIndex].Cells.Count);
@@ -117,7 +121,7 @@ namespace LeaderAnalytics.LeaderPivot
 
             if (node.CellType != CellType.Root && !fillCollapsedCell)
             {
-                MatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan);
+                MatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan, IsNodeExpanded(node.ID));
 
                 if (fillColumnHeaderCount > 0)
                 {
@@ -126,12 +130,12 @@ namespace LeaderAnalytics.LeaderPivot
                 }
                 t.Rows[rowIndex].Cells.Add(newMatrixCell);
             }
-            fillCollapsedCell = !node.IsExpanded && node.CellType == CellType.GroupHeader;
+            fillCollapsedCell = !IsNodeExpanded(node.ID) && node.CellType == CellType.GroupHeader;
             
             if (fillCollapsedCell)
                 fillColumnHeaderCount = measures.Where(x => x.IsEnabled).Count();
 
-            if (node.IsExpanded && node.Children is not null)
+            if (IsNodeExpanded(node.ID) && node.Children is not null)
                 foreach (Node<T> child in node.Children)
                     BuildColumnHeaders(child, t, index + 1, headerDepth);
         }
@@ -152,9 +156,9 @@ namespace LeaderAnalytics.LeaderPivot
 
             if (node.IsRow)
             {
-                if (node.IsExpanded && node.CellType != CellType.TotalHeader && node.CellType != CellType.GrandTotalHeader) 
+                if (IsNodeExpanded(node.ID) && node.CellType != CellType.TotalHeader && node.CellType != CellType.GrandTotalHeader) 
                     rowSpan = Math.Max(GetLeafNodeCount(node, true),1);
-                else if(!node.IsExpanded || node.CellType == CellType.TotalHeader || node.CellType == CellType.GrandTotalHeader)
+                else if(!IsNodeExpanded(node.ID) || node.CellType == CellType.TotalHeader || node.CellType == CellType.GrandTotalHeader)
                     colSpan = headerWidth - peerDepth + 1;
 
                 // Add the node whether or not it is expanded.  If the node is not expanded
@@ -163,9 +167,9 @@ namespace LeaderAnalytics.LeaderPivot
 
                 if (node.CellType != CellType.Root && !fillCollapsedCell)
                 {
-                    MatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan);
+                    MatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan, IsNodeExpanded(node.ID));
                     
-                    if (!node.IsExpanded)
+                    if (!IsNodeExpanded(node.ID))
                         newMatrixCell.CellType = CellType.GroupHeader;
 
                     t.Rows[rowIndex].Cells.Add(newMatrixCell);
@@ -198,7 +202,7 @@ namespace LeaderAnalytics.LeaderPivot
                         t.Rows[rowIndex].Cells.Add(new MatrixCell(childCellType, rowSpan, colSpan));
                         colCount++;
                     }
-                    MatrixCell newMatrixCell = new MatrixCell(child, rowSpan, colSpan);
+                    MatrixCell newMatrixCell = new MatrixCell(child, rowSpan, colSpan, IsNodeExpanded(child.ID));
 
                     if (collapsedCount > 0 || (fillCollapsedCell ))
                     {
@@ -212,9 +216,9 @@ namespace LeaderAnalytics.LeaderPivot
                 t.Rows.Add(new MatrixRow());
             }
 
-            fillCollapsedCell = ! node.IsExpanded && node.CellType == CellType.GroupHeader;
+            fillCollapsedCell = !IsNodeExpanded(node.ID) && node.CellType == CellType.GroupHeader;
 
-            if(node.IsExpanded && node.Children is not null)
+            if(IsNodeExpanded(node.ID) && node.Children is not null)
                 foreach (Node<T> child in node.Children.Where(x => x.IsRow))
                     BuildRows(child, t, ++index, peerDepth + 1);
         }
@@ -224,7 +228,7 @@ namespace LeaderAnalytics.LeaderPivot
         {
             int tmp = maxDepth + 1;
 
-            if(node.IsExpanded && node.Children is not null)
+            if(IsNodeExpanded(node.ID) && node.Children is not null)
                 foreach (Node<T> child in node.Children.Where(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow) )) 
                     maxDepth = Math.Max(maxDepth, GetHeaderDepth(child, checkRows, tmp));
 
@@ -238,9 +242,9 @@ namespace LeaderAnalytics.LeaderPivot
 
             // if the node is not expanded, or has no children of the specified axis it is a leaf node.
 
-            if ((node.CellType != CellType.Root) && (!node.IsExpanded || (node.Children?.Count(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)) ?? 0) == 0))
+            if ((node.CellType != CellType.Root) && (!IsNodeExpanded(node.ID) || (node.Children?.Count(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)) ?? 0) == 0))
             {
-                count = node.IsExpanded ? 1 : 0; // don't count collapsed rows because we count the totals row.
+                count = IsNodeExpanded(node.ID) ? 1 : 0; // don't count collapsed rows because we count the totals row.
             }
             else
             {
@@ -252,21 +256,6 @@ namespace LeaderAnalytics.LeaderPivot
             return count;
         }
 
-        private bool _ToggleNodeExpansion(string nodeID, Node<T> parent)
-        {
-            if (parent.Children is not null)
-            {
-                foreach (Node<T> node in parent.Children)
-                {
-                    if (node.ID == nodeID)
-                    {
-                        node.IsExpanded = !node.IsExpanded;
-                        return true;
-                    }
-                    _ToggleNodeExpansion(nodeID, node);
-                }
-            }
-            return false;
-        }
+        private bool IsNodeExpanded(string nodeID) => ! CollapsedNodeDict.Contains(nodeID);
     }
 }

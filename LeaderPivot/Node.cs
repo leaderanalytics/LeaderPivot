@@ -24,6 +24,9 @@ namespace LeaderAnalytics.LeaderPivot
             Value = val;
             ColumnKey = columnKey;
             CellType = cellType;
+
+            if (rowDimension is null ^ columnDimension is null)
+                ID = $"{rowDimension?.ID ?? columnDimension.ID}:{val}";
         }
 
         public void AddChild(Node<T> child)
@@ -38,17 +41,11 @@ namespace LeaderAnalytics.LeaderPivot
 
     public abstract class Node
     {
-        public string ID { get; private set; } = Guid.NewGuid().ToString();
-        private bool _IsExpanded = true;
+        public string ID { get; protected set; } 
         public CellType CellType { get; set; }
         public string ColumnKey { get; set; }             // Identifies which column a cell should be rendered in, since not all nodes have identical hierarchies.  Not unique.  Not the same as ID.
         public object Value { get; set; }
         public bool IsRow { get; set; }                 // Not always the same as the dimension, notably grand totals.
-        public bool IsExpanded 
-        {
-            get => _IsExpanded ;
-            set => _IsExpanded = value;
-        }
         public bool CanToggleExapansion { get; set; }   // User can not toggle expansion on leaf dimensions (last dimension for each axis).  
     }
 }
