@@ -26,12 +26,12 @@ namespace ConsoleDemo
             List<SalesData> salesData = salesDataService.GetSalesData();
             List<Dimension<SalesData>> dimensions = salesDataService.LoadDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
-            bool displayGrandTotals = true;
+            bool displayGrandTotals = false;
             Validator<SalesData> validator = new Validator<SalesData>();
             validator.Validate(salesData, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
-            Node<SalesData> dataNode = nodeBuilder.Build(salesData, dimensions, measures);
+            Node<SalesData> dataNode = nodeBuilder.Build(salesData, dimensions, measures, displayGrandTotals);
             DisplayGraph(dataNode);
         }
 
@@ -42,12 +42,12 @@ namespace ConsoleDemo
             List<SalesData> salesData = salesDataService.GetSalesData();
             List<Dimension<SalesData>> dimensions = salesDataService.LoadDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
-            bool displayGrandTotals = true;
+            bool displayGrandTotals = false;
             Validator<SalesData> validator = new Validator<SalesData>();
             validator.Validate(salesData, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);
             measures = validator.SortAndFilterMeasures(measures);
-            Node<SalesData> columnHeaderNode = nodeBuilder.BuildColumnHeaders(salesData, dimensions, measures);
+            Node<SalesData> columnHeaderNode = nodeBuilder.BuildColumnHeaders(salesData, dimensions, measures, displayGrandTotals);
             DisplayGraph(columnHeaderNode);
         }
 
@@ -59,6 +59,7 @@ namespace ConsoleDemo
                     "Value".PadRight(20) +
                     "CellType".PadRight(20) +
                     "Row Dim DisplayValue".PadRight(30) +
+                    "Col Dim DisplayValue".PadRight(30) +
                     "IsRow".PadRight(8) +
                     "IsExp".PadRight(8) +
                     "ColumnKey".PadRight(30) 
@@ -78,6 +79,7 @@ namespace ConsoleDemo
                     v.Value?.ToString()?.PadRight(20) +
                     v.CellType.ToString().PadRight(20) +
                     (v.RowDimension?.DisplayValue.PadRight(30) ?? new String(' ', 30)) +
+                    (v.ColumnDimension?.DisplayValue.PadRight(30) ?? new String(' ', 30)) +
                     (v.IsRow ? "Y" : "N").PadRight(8) +
                     (v.IsExpanded ? "Y" : "N").PadRight(8) +
                     v.ColumnKey?.PadRight(30) 

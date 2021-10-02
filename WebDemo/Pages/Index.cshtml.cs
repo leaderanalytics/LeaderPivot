@@ -30,9 +30,8 @@ namespace WebDemo.Pages
             displayGrandTotals = true;
             NodeBuilder<SalesData> nodeBuilder = new NodeBuilder<SalesData>();
             Validator<SalesData> validator = new Validator<SalesData>();
-            // uncomment when MatrixBuilder is updated
-            //MatrixBuilder<SalesData> matrixBuilder = new MatrixBuilder<SalesData>(nodeBuilder, validator);
-            //table = matrixBuilder.BuildMatrix(salesData, dimensions, measures, displayGrandTotals);
+            MatrixBuilder<SalesData> matrixBuilder = new MatrixBuilder<SalesData>(nodeBuilder, validator);
+            table = matrixBuilder.BuildMatrix(salesData, dimensions, measures, displayGrandTotals);
         }
     }
 }

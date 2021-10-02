@@ -29,7 +29,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="MatrixBuilder.cs" />
     <Compile Remove="NodeBuilder_v1.cs" />
     <Compile Remove="NodeCache.cs" />
   </ItemGroup>

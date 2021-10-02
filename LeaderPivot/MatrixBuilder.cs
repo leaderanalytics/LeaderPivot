@@ -41,7 +41,7 @@ namespace LeaderAnalytics.LeaderPivot
             validator.Validate(data, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);
             this.measures = validator.SortAndFilterMeasures(measures);
-            dataNode = nodeBuilder.Build(data, dimensions, this.measures, displayGrandTotals);
+            dataNode = nodeBuilder.Build(data, dimensions.ToList(), this.measures, displayGrandTotals);
             columnHeaderNode = nodeBuilder.BuildColumnHeaders(data, dimensions, this.measures, displayGrandTotals);
             return buildMatrix();
         }
@@ -110,7 +110,7 @@ namespace LeaderAnalytics.LeaderPivot
                 colSpan = node.IsExpanded ? GetLeafNodeCount(node, false) : measures.Count();
             }
             else
-                ColumnIndexDict.Add(node.CellKey, t.Rows[rowIndex].Cells.Count);
+                ColumnIndexDict.Add(node.ColumnKey, t.Rows[rowIndex].Cells.Count);
             
             if (rowSpan > 1)
                 rowIndex = rowIndex - (rowSpan - 1);
@@ -131,7 +131,7 @@ namespace LeaderAnalytics.LeaderPivot
             if (fillCollapsedCell)
                 fillColumnHeaderCount = measures.Where(x => x.IsEnabled).Count();
 
-            if (node.IsExpanded)
+            if (node.IsExpanded && node.Children is not null)
                 foreach (Node<T> child in node.Children)
                     BuildColumnHeaders(child, t, index + 1, headerDepth);
         }
@@ -176,15 +176,15 @@ namespace LeaderAnalytics.LeaderPivot
             rowSpan = colSpan = 1;
             int colIndex = 0;  // Where the column should be
             int colCount = 0;  // Ordinal position.  If less than colIndex, insert dummy cells
-            IEnumerable<Node<T>> columnData = node.Children.Where(x => !x.IsRow);
+            IEnumerable<Node<T>> columnData = node.Children?.Where(x => !x.IsRow);
             
-            if (columnData.Any()) // Only the leaf row dimension and totals rows will contain column data.
+            if (columnData?.Any() ?? false) // Only the leaf row dimension and totals rows will contain column data.
             {
                 int collapsedCount = 0;
 
                 foreach (Node<T> child in columnData)
                 {
-                    if (!ColumnIndexDict.TryGetValue(child.CellKey, out colIndex))
+                    if (!ColumnIndexDict.TryGetValue(child.ColumnKey, out colIndex))
                     {
                         collapsedCount++;
                         continue; // Column data will not be found if column is collapsed.
@@ -214,7 +214,7 @@ namespace LeaderAnalytics.LeaderPivot
 
             fillCollapsedCell = ! node.IsExpanded && node.CellType == CellType.GroupHeader;
 
-            if(node.IsExpanded)
+            if(node.IsExpanded && node.Children is not null)
                 foreach (Node<T> child in node.Children.Where(x => x.IsRow))
                     BuildRows(child, t, ++index, peerDepth + 1);
         }
@@ -224,7 +224,7 @@ namespace LeaderAnalytics.LeaderPivot
         {
             int tmp = maxDepth + 1;
 
-            if(node.IsExpanded)
+            if(node.IsExpanded && node.Children is not null)
                 foreach (Node<T> child in node.Children.Where(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow) )) 
                     maxDepth = Math.Max(maxDepth, GetHeaderDepth(child, checkRows, tmp));
 
@@ -238,14 +238,15 @@ namespace LeaderAnalytics.LeaderPivot
 
             // if the node is not expanded, or has no children of the specified axis it is a leaf node.
 
-            if ((node.CellType != CellType.Root) && (!node.IsExpanded || node.Children.Count(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)) == 0))
+            if ((node.CellType != CellType.Root) && (!node.IsExpanded || (node.Children?.Count(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)) ?? 0) == 0))
             {
                 count = node.IsExpanded ? 1 : 0; // don't count collapsed rows because we count the totals row.
             }
             else
             {
-                foreach (Node<T> child in node.Children.Where(x => ((checkRows && x.IsRow) || (!checkRows && !x.IsRow))))
-                    count += GetLeafNodeCount(child, checkRows);
+                if(node.Children is not null)
+                    foreach (Node<T> child in node.Children.Where(x => ((checkRows && x.IsRow) || (!checkRows && !x.IsRow))))
+                        count += GetLeafNodeCount(child, checkRows);
             }
             
             return count;
@@ -253,14 +254,17 @@ namespace LeaderAnalytics.LeaderPivot
 
         private bool _ToggleNodeExpansion(string nodeID, Node<T> parent)
         {
-            foreach (Node<T> node in parent.Children)
+            if (parent.Children is not null)
             {
-                if (node.ID == nodeID)
+                foreach (Node<T> node in parent.Children)
                 {
-                    node.IsExpanded = !node.IsExpanded;
-                    return true;
+                    if (node.ID == nodeID)
+                    {
+                        node.IsExpanded = !node.IsExpanded;
+                        return true;
+                    }
+                    _ToggleNodeExpansion(nodeID, node);
                 }
-                _ToggleNodeExpansion(nodeID, node);
             }
             return false;
         }

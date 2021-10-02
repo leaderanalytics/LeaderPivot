@@ -38,7 +38,8 @@ namespace LeaderAnalytics.LeaderPivot
 
     public abstract class Node
     {
-        private bool _IsExpanded;
+        public string ID { get; private set; } = Guid.NewGuid().ToString();
+        private bool _IsExpanded = true;
         public CellType CellType { get; set; }
         public string ColumnKey { get; set; }             // Identifies which column a cell should be rendered in, since not all nodes have identical hierarchies.  Not unique.  Not the same as ID.
         public object Value { get; set; }
