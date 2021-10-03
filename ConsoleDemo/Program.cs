@@ -26,7 +26,7 @@ namespace ConsoleDemo
             List<SalesData> salesData = salesDataService.GetSalesData();
             List<Dimension<SalesData>> dimensions = salesDataService.LoadDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
-            bool displayGrandTotals = false;
+            bool displayGrandTotals = true;
             Validator<SalesData> validator = new Validator<SalesData>();
             validator.Validate(salesData, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);
@@ -42,7 +42,7 @@ namespace ConsoleDemo
             List<SalesData> salesData = salesDataService.GetSalesData();
             List<Dimension<SalesData>> dimensions = salesDataService.LoadDimensions();
             List<Measure<SalesData>> measures = salesDataService.LoadMeasures();
-            bool displayGrandTotals = false;
+            bool displayGrandTotals = true;
             Validator<SalesData> validator = new Validator<SalesData>();
             validator.Validate(salesData, dimensions, measures);
             dimensions = validator.ValidateDimensions(dimensions);

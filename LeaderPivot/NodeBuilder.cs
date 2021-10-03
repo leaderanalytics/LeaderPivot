@@ -84,8 +84,6 @@ namespace LeaderAnalytics.LeaderPivot
 
                     if (dim.IsRow || buildHeaders) 
                     {
-                        
-
                         if (!dim.IsLeaf)
                         {
                             object nodeVal = DisplayValue(dim, grp.First()) + " Total";
@@ -98,10 +96,7 @@ namespace LeaderAnalytics.LeaderPivot
                         }
                         
                         if(displayGrandTotals && !buildHeaders)
-                        {
-                            //measureData = BuildMeasureData(node, grp, data, dim); // Append Grand Totals column to each row
                             BuildMeasures(node, null, measureData, CellType.GrandTotal, "GrandTotal");
-                        }
                     }
                 }
 
@@ -111,9 +106,8 @@ namespace LeaderAnalytics.LeaderPivot
                         BuildMeasureLabels(node, grp.Key);
                     else
                     {
-                        CellType cellType = parent.CellType == CellType.GroupHeader ? CellType.Measure : parent.CellType == CellType.TotalHeader ? CellType.Total : CellType.GrandTotal;
-                        //MeasureData<T> measureData = BuildMeasureData(node, grp, data, dim);
-                        BuildMeasures(parent, dim, measureData, cellType, grp.Key);
+                        CellType cellType = parent.CellType == CellType.GrandTotalHeader ? CellType.GrandTotal : parent.RowDimension.IsLeaf && dim.IsLeaf ? CellType.Measure : CellType.Total;
+                        BuildMeasures(parent, dim, measureData, cellType, grp.Key); // Add measures for total rows
                     }
                 }
             }
@@ -197,7 +191,7 @@ namespace LeaderAnalytics.LeaderPivot
 
         private string DisplayValue(Dimension<T> dimension, T data) => dimension.HeaderValue == null ? dimension.GroupValue(data) : dimension.HeaderValue(data);
 
-        public static string CreateCellKey(string dimensionID, string groupValue, string measureID) => $"[{dimensionID}:{groupValue}][{measureID}]";
+        private string CreateCellKey(string dimensionID, string groupValue, string measureID) => $"[{dimensionID}:{groupValue}][{measureID}]";
     }
 
 }

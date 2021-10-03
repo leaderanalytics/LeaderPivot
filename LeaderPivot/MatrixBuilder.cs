@@ -47,7 +47,6 @@ namespace LeaderAnalytics.LeaderPivot
             columnHeaderNode = nodeBuilder.BuildColumnHeaders(data, dimensions, this.measures, displayGrandTotals);
             return buildMatrix();
         }
-        
 
         public Matrix ToggleNodeExpansion(string nodeID)
         {
@@ -59,7 +58,6 @@ namespace LeaderAnalytics.LeaderPivot
             return buildMatrix();
         }
 
-
         private Matrix buildMatrix()
         {
             ColumnIndexDict.Clear();
@@ -68,7 +66,6 @@ namespace LeaderAnalytics.LeaderPivot
             BuildRows(dataNode, t, 0, 0);
             return t;
         }
-
 
         private void BuildColumnHeaders(Node<T> node, Matrix t, int index, int peerDepth)
         {
@@ -102,8 +99,8 @@ namespace LeaderAnalytics.LeaderPivot
 
                 index = 1;  // Don't add any cells to row 0.
             }
-
-            int headerDepth = GetHeaderDepth(node, false, 0) + (IsNodeExpanded(node.ID) ? 0 : 1);
+            bool isNodeExpanded = IsNodeExpanded(node.ID);
+            int headerDepth = GetHeaderDepth(node, false, 0) + (isNodeExpanded ? 0 : 1);
             int rowSpan = 1;
             int colSpan = 1;
             int rowIndex = headerHeight - headerDepth;
@@ -111,7 +108,7 @@ namespace LeaderAnalytics.LeaderPivot
             if (node.CellType != CellType.MeasureLabel && node.CellType != CellType.MeasureTotalLabel)
             {
                 rowSpan = peerDepth - headerDepth;
-                colSpan = IsNodeExpanded(node.ID) ? GetLeafNodeCount(node, false) : measures.Count();
+                colSpan = isNodeExpanded ? GetLeafNodeCount(node, false) : measures.Count();
             }
             else
                 ColumnIndexDict.Add(node.ColumnKey, t.Rows[rowIndex].Cells.Count);
@@ -121,7 +118,7 @@ namespace LeaderAnalytics.LeaderPivot
 
             if (node.CellType != CellType.Root && !fillCollapsedCell)
             {
-                MatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan, IsNodeExpanded(node.ID));
+                MatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan, isNodeExpanded);
 
                 if (fillColumnHeaderCount > 0)
                 {
@@ -130,12 +127,12 @@ namespace LeaderAnalytics.LeaderPivot
                 }
                 t.Rows[rowIndex].Cells.Add(newMatrixCell);
             }
-            fillCollapsedCell = !IsNodeExpanded(node.ID) && node.CellType == CellType.GroupHeader;
+            fillCollapsedCell = !isNodeExpanded && node.CellType == CellType.GroupHeader;
             
             if (fillCollapsedCell)
                 fillColumnHeaderCount = measures.Where(x => x.IsEnabled).Count();
 
-            if (IsNodeExpanded(node.ID) && node.Children is not null)
+            if (isNodeExpanded && node.Children is not null)
                 foreach (Node<T> child in node.Children)
                     BuildColumnHeaders(child, t, index + 1, headerDepth);
         }
@@ -153,12 +150,13 @@ namespace LeaderAnalytics.LeaderPivot
             int rowIndex = t.Rows.Count - 1;
             int rowSpan = 1;
             int colSpan = 1;
+            bool isRowExpanded = IsNodeExpanded(node.ID);
 
             if (node.IsRow)
             {
-                if (IsNodeExpanded(node.ID) && node.CellType != CellType.TotalHeader && node.CellType != CellType.GrandTotalHeader) 
+                if (isRowExpanded && node.CellType != CellType.TotalHeader && node.CellType != CellType.GrandTotalHeader) 
                     rowSpan = Math.Max(GetLeafNodeCount(node, true),1);
-                else if(!IsNodeExpanded(node.ID) || node.CellType == CellType.TotalHeader || node.CellType == CellType.GrandTotalHeader)
+                else if(!isRowExpanded || node.CellType == CellType.TotalHeader || node.CellType == CellType.GrandTotalHeader)
                     colSpan = headerWidth - peerDepth + 1;
 
                 // Add the node whether or not it is expanded.  If the node is not expanded
@@ -167,9 +165,9 @@ namespace LeaderAnalytics.LeaderPivot
 
                 if (node.CellType != CellType.Root && !fillCollapsedCell)
                 {
-                    MatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan, IsNodeExpanded(node.ID));
+                    MatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan, isRowExpanded);
                     
-                    if (!IsNodeExpanded(node.ID))
+                    if (!isRowExpanded)
                         newMatrixCell.CellType = CellType.GroupHeader;
 
                     t.Rows[rowIndex].Cells.Add(newMatrixCell);
@@ -184,41 +182,40 @@ namespace LeaderAnalytics.LeaderPivot
             
             if (columnData?.Any() ?? false) // Only the leaf row dimension and totals rows will contain column data.
             {
-                int collapsedCount = 0;
-
+                int collapsedColumnCount = 0;
+                CellType rowCellType = node.CellType == CellType.GrandTotalHeader ? CellType.GrandTotal : (node.CellType == CellType.TotalHeader && ! fillCollapsedCell) ? CellType.Total : CellType.Measure;
                 foreach (Node<T> child in columnData)
                 {
+
                     if (!ColumnIndexDict.TryGetValue(child.ColumnKey, out colIndex))
                     {
-                        collapsedCount++;
+                        collapsedColumnCount = measures.Count;
                         continue; // Column data will not be found if column is collapsed.
                     }
-
-                    CellType childCellType = (node.CellType == CellType.GroupHeader || fillCollapsedCell) ? CellType.Measure : node.CellType == CellType.TotalHeader ? CellType.Total : CellType.GrandTotal;
 
                     while (colCount < colIndex)
                     {
                         // data values are missing.  Insert dummy cells.
-                        t.Rows[rowIndex].Cells.Add(new MatrixCell(childCellType, rowSpan, colSpan));
+                        t.Rows[rowIndex].Cells.Add(new MatrixCell(rowCellType, rowSpan, colSpan));
                         colCount++;
                     }
-                    MatrixCell newMatrixCell = new MatrixCell(child, rowSpan, colSpan, IsNodeExpanded(child.ID));
-
-                    if (collapsedCount > 0 || (fillCollapsedCell ))
-                    {
-                        newMatrixCell.CellType = childCellType;
-                        collapsedCount--;
-                    }
+                    MatrixCell newMatrixCell = new MatrixCell(child, rowSpan, colSpan, IsNodeExpanded(child.ID)) { CellType = collapsedColumnCount > 0 || fillCollapsedCell ? rowCellType : child.CellType};
+                    
+                    if (collapsedColumnCount == 0 && !(child.ColumnDimension?.IsLeaf ?? false))
+                        newMatrixCell.CellType = CellType.Total;
+                    
                     t.Rows[rowIndex].Cells.Add(newMatrixCell);
                     colCount++;
+                    if (collapsedColumnCount > 0)
+                        collapsedColumnCount--;
                 }
                 
                 t.Rows.Add(new MatrixRow());
             }
 
-            fillCollapsedCell = !IsNodeExpanded(node.ID) && node.CellType == CellType.GroupHeader;
+            fillCollapsedCell = !isRowExpanded && node.CellType == CellType.GroupHeader;
 
-            if(IsNodeExpanded(node.ID) && node.Children is not null)
+            if(isRowExpanded && node.Children is not null)
                 foreach (Node<T> child in node.Children.Where(x => x.IsRow))
                     BuildRows(child, t, ++index, peerDepth + 1);
         }
