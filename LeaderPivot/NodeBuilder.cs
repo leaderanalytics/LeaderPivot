@@ -2,7 +2,8 @@
  * Copyright 2021 Leader Analytics 
  * LeaderAnalytics.com
  * SamWheat.com
- * 
+ *  
+ * Please do not remove this header.
  */
 
 using Microsoft.VisualBasic;
