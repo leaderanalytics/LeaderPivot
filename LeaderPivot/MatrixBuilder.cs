@@ -24,6 +24,7 @@ namespace LeaderAnalytics.LeaderPivot
         private int headerWidth;    // Total number of row header columns   
         private Dictionary<string, int> ColumnIndexDict;
         private HashSet<string> CollapsedNodeDict;
+        private HashSet<int> LeafColumnDict;    // ColumnIndex of every column that is a leaf (not a total).
         private NodeBuilder<T> nodeBuilder;
         private Validator<T> validator;
         private bool fillCollapsedCell;
@@ -35,13 +36,15 @@ namespace LeaderAnalytics.LeaderPivot
             this.nodeBuilder = nodeBuilder ?? throw new ArgumentNullException(nameof(nodeBuilder));    
             ColumnIndexDict = new Dictionary<string, int>();
             CollapsedNodeDict = new HashSet<string>();
+            LeafColumnDict = new HashSet<int>();
         }
         
         public Matrix BuildMatrix(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
         {
+            CollapsedNodeDict.Clear();
+            validator.Validate(data, dimensions, measures);
             this.data = data;
             this.DisplayGrandTotals = displayGrandTotals;
-            validator.Validate(data, dimensions, measures);
             this.dimensions = validator.ValidateDimensions(dimensions);
             this.measures = validator.SortAndFilterMeasures(measures);
             dataNode = nodeBuilder.Build(data, this.dimensions.ToList(), this.measures, displayGrandTotals);
@@ -62,6 +65,7 @@ namespace LeaderAnalytics.LeaderPivot
         private Matrix buildMatrix()
         {
             ColumnIndexDict.Clear();
+            LeafColumnDict.Clear();
             Matrix t = new Matrix();
             BuildColumnHeaders(columnHeaderNode, t, 0, 0);
             BuildRows(dataNode, t, 0, 0);
@@ -124,15 +128,18 @@ namespace LeaderAnalytics.LeaderPivot
 
                 if (fillColumnHeaderCount > 0)
                 {
-                    newMatrixCell.CellType = CellType.MeasureLabel; // 
+                    newMatrixCell.CellType = CellType.MeasureLabel;  
                     fillColumnHeaderCount--;
                 }
                 t.Rows[rowIndex].Cells.Add(newMatrixCell);
+
+                if (newMatrixCell.CellType == CellType.MeasureLabel)
+                    LeafColumnDict.Add(t.Rows[rowIndex].Cells.Count - 1);
             }
             fillCollapsedCell = !isNodeExpanded && node.CellType == CellType.GroupHeader;
             
             if (fillCollapsedCell)
-                fillColumnHeaderCount = measures.Where(x => x.IsEnabled).Count();
+                fillColumnHeaderCount = measures.Count();
 
             if (isNodeExpanded && node.Children is not null)
                 foreach (Node<T> child in node.Children)
@@ -186,6 +193,7 @@ namespace LeaderAnalytics.LeaderPivot
             {
                 int collapsedColumnCount = 0;
                 CellType rowCellType = node.CellType == CellType.GrandTotalHeader ? CellType.GrandTotal : (node.CellType == CellType.TotalHeader && ! fillCollapsedCell) ? CellType.Total : CellType.Measure;
+                
                 foreach (Node<T> child in columnData)
                 {
                     if (!ColumnIndexDict.TryGetValue(child.ColumnKey, out colIndex))
@@ -197,7 +205,8 @@ namespace LeaderAnalytics.LeaderPivot
                     while (colCount < colIndex)
                     {
                         // data values are missing.  Insert dummy cells.
-                        t.Rows[rowIndex].Cells.Add(new MatrixCell(rowCellType, rowSpan, colSpan));
+                        CellType missingCellType = rowCellType == CellType.Total || !LeafColumnDict.Contains(colCount) ? CellType.Total : CellType.Measure;
+                        t.Rows[rowIndex].Cells.Add(new MatrixCell(missingCellType, rowSpan, colSpan));
                         colCount++;
                     }
                     MatrixCell newMatrixCell = new MatrixCell(child, rowSpan, colSpan, IsNodeExpanded(child.ID)) { CellType = collapsedColumnCount > 0 || fillCollapsedCell ? rowCellType : child.CellType};
@@ -207,6 +216,7 @@ namespace LeaderAnalytics.LeaderPivot
                     
                     t.Rows[rowIndex].Cells.Add(newMatrixCell);
                     colCount++;
+
                     if (collapsedColumnCount > 0)
                         collapsedColumnCount--;
                 }
