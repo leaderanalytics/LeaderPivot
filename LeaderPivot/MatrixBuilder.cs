@@ -28,7 +28,7 @@ namespace LeaderAnalytics.LeaderPivot
         private Validator<T> validator;
         private bool fillCollapsedCell;
         private int fillColumnHeaderCount;
-
+        
         public MatrixBuilder(NodeBuilder<T> nodeBuilder, Validator<T> validator)
         {
             this.validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -42,10 +42,10 @@ namespace LeaderAnalytics.LeaderPivot
             this.data = data;
             this.DisplayGrandTotals = displayGrandTotals;
             validator.Validate(data, dimensions, measures);
-            dimensions = validator.ValidateDimensions(dimensions);
+            this.dimensions = validator.ValidateDimensions(dimensions);
             this.measures = validator.SortAndFilterMeasures(measures);
-            dataNode = nodeBuilder.Build(data, dimensions.ToList(), this.measures, displayGrandTotals);
-            columnHeaderNode = nodeBuilder.BuildColumnHeaders(data, dimensions, this.measures, displayGrandTotals);
+            dataNode = nodeBuilder.Build(data, this.dimensions.ToList(), this.measures, displayGrandTotals);
+            columnHeaderNode = nodeBuilder.BuildColumnHeaders(data, this.dimensions, this.measures, displayGrandTotals);
             return buildMatrix();
         }
 
@@ -100,6 +100,7 @@ namespace LeaderAnalytics.LeaderPivot
 
                 index = 1;  // Don't add any cells to row 0.
             }
+            
             bool isNodeExpanded = IsNodeExpanded(node.ID);
             int headerDepth = GetHeaderDepth(node, false, 0) + (isNodeExpanded ? 0 : 1);
             int rowSpan = 1;
@@ -113,7 +114,7 @@ namespace LeaderAnalytics.LeaderPivot
             }
             else
                 ColumnIndexDict.Add(node.ColumnKey, t.Rows[rowIndex].Cells.Count);
-            
+
             if (rowSpan > 1)
                 rowIndex = rowIndex - (rowSpan - 1);
 
@@ -187,7 +188,6 @@ namespace LeaderAnalytics.LeaderPivot
                 CellType rowCellType = node.CellType == CellType.GrandTotalHeader ? CellType.GrandTotal : (node.CellType == CellType.TotalHeader && ! fillCollapsedCell) ? CellType.Total : CellType.Measure;
                 foreach (Node<T> child in columnData)
                 {
-
                     if (!ColumnIndexDict.TryGetValue(child.ColumnKey, out colIndex))
                     {
                         collapsedColumnCount = measures.Count;
@@ -255,5 +255,6 @@ namespace LeaderAnalytics.LeaderPivot
         }
 
         private bool IsNodeExpanded(string nodeID) => ! CollapsedNodeDict.Contains(nodeID);
+ 
     }
 }

@@ -61,7 +61,7 @@ namespace ConsoleDemo
                     "Row Dim DisplayValue".PadRight(30) +
                     "Col Dim DisplayValue".PadRight(30) +
                     "IsRow".PadRight(8) +
-                    "ColumnKey".PadRight(30) +
+                    "ColumnKey".PadRight(100) +
                     "Node ID".PadRight(30)
                     );
 
@@ -81,7 +81,7 @@ namespace ConsoleDemo
                     (v.RowDimension?.DisplayValue.PadRight(30) ?? new String(' ', 30)) +
                     (v.ColumnDimension?.DisplayValue.PadRight(30) ?? new String(' ', 30)) +
                     (v.IsRow ? "Y" : "N").PadRight(8) +
-                    (v.ColumnKey?.PadRight(30) ?? new String(' ', 30)) +
+                    (v.ColumnKey?.PadRight(100) ?? new String(' ', 100)) +
                     v.ID?.PadRight(30)
                     );
             }

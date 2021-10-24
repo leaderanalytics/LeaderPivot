@@ -85,7 +85,7 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     HeaderValue = x => $"Year: {x.Year}",
                     IsRow = false,
                     IsExpanded = true,
-                    Sequence = 0,
+                    Sequence = 2,
                     IsAscending = true
                 },
 
@@ -108,7 +108,7 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     SortValue = x =>  System.Array.IndexOf(Months, x).ToString().PadLeft(2,'0'),
                     IsRow = false,
                     IsExpanded = true,
-                    Sequence = 2,
+                    Sequence = 0,
                     IsAscending = true
                 }
             };

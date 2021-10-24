@@ -25,7 +25,9 @@ namespace LeaderAnalytics.LeaderPivot
             ColumnKey = columnKey;
             CellType = cellType;
 
-            if (rowDimension is null ^ columnDimension is null)
+            if (columnKey != null)
+                ID = columnKey;
+            else if (rowDimension is null ^ columnDimension is null)
                 ID = $"{rowDimension?.ID ?? columnDimension.ID}:{val}";
         }
 

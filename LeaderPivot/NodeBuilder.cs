@@ -21,11 +21,9 @@ namespace LeaderAnalytics.LeaderPivot
         private MeasureData<T>[] MeasureDatas;
         private bool buildHeaders;
         private string grandTotalColumnID = Guid.NewGuid().ToString();
+        private int grandTotalColumnSeq;
         private bool displayGrandTotals;
-
-        public NodeBuilder()
-        {
-        }
+        private ColumnIDGraph ColumnIDGraph;
 
         public Node<T> Build(IEnumerable<T> data, List<Dimension<T>> dimensions, List<Measure<T>> measures, bool displayGrandTotals)
         {
@@ -34,6 +32,8 @@ namespace LeaderAnalytics.LeaderPivot
             MeasureDatas = new MeasureData<T>[dimensions.Count];
             this.displayGrandTotals = displayGrandTotals;
             Node<T> root = new Node<T>(null, null, null, CellType.Root);
+            ColumnIDGraph = new ColumnIDGraph(dimensions.Where(x => !x.IsRow).Count() + 1);
+            grandTotalColumnSeq = dimensions.Where(x => !x.IsRow).Count();
             BuildNodes(root, dimensions, data);
             return root;
         }
@@ -41,8 +41,10 @@ namespace LeaderAnalytics.LeaderPivot
         public Node<T> BuildColumnHeaders(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
         {
             buildHeaders = true;
-            Node<T> root = new Node<T>(null, null, null, CellType.Root);
             this.displayGrandTotals = displayGrandTotals;
+            Node<T> root = new Node<T>(null, null, null, CellType.Root);
+            ColumnIDGraph = new ColumnIDGraph(dimensions.Where(x => !x.IsRow).Count() + 1);
+            grandTotalColumnSeq = dimensions.Where(x => !x.IsRow).Count();
             BuildNodes(root, dimensions.Where(x => !x.IsRow).ToList(), data);
             return root;
         }
@@ -74,6 +76,10 @@ namespace LeaderAnalytics.LeaderPivot
                     node.RowDimension = rowDim;
                     node.ColumnDimension = colDim;
                 }
+                
+                if (!dim.IsRow && ! dim.IsLeaf)
+                    ColumnIDGraph.SetColumnID(dim.Sequence, dim.ID, grp.Key);
+
                 MeasureData<T> measureData = null;
 
                 if (!buildHeaders)
@@ -133,27 +139,29 @@ namespace LeaderAnalytics.LeaderPivot
         private void BuildMeasures(Node<T> parent, Dimension<T> columnDim,  MeasureData<T> measureData, CellType cellType, string cellKey)
         {
             // Measure are always leaf node columns and are always expanded.
-
             foreach (Measure<T> measure in Measures)
             {
-                string nodeCellKey = string.IsNullOrEmpty(cellKey) ? null : CreateCellKey(columnDim?.ID ?? grandTotalColumnID, cellKey, measure.DisplayValue);
+                ColumnIDGraph.SetColumnID(columnDim?.Sequence ?? grandTotalColumnSeq, columnDim?.ID ?? grandTotalColumnID, cellKey, measure.DisplayValue);
                 object val = string.IsNullOrEmpty(measure.Format) ? measure.Aggragate(measureData) : String.Format(measure.Format, measure.Aggragate(measureData));
-                Node<T> child = new Node<T>(parent?.RowDimension, columnDim, val, cellType, nodeCellKey);
+                Node<T> child = new Node<T>(parent?.RowDimension, columnDim, val, cellType, ColumnIDGraph.GetColumnIDGraph());
                 parent.AddChild(child);
             }
+            ColumnIDGraph.ClearColumnID(columnDim?.Sequence ?? grandTotalColumnSeq);
         }
 
         private void BuildMeasureLabels(Node<T> parent, string columnGroupValue)
         {
             CellType cellType = parent.CellType == CellType.GroupHeader ? CellType.MeasureLabel :  CellType.MeasureTotalLabel;
             string dimensionID = parent.CellType == CellType.GrandTotalHeader ? grandTotalColumnID : parent.ColumnDimension.ID;
+            int dimensionSeq = parent.CellType == CellType.GrandTotalHeader ? grandTotalColumnSeq : parent.ColumnDimension.Sequence;
 
             foreach (Measure<T> measure in Measures)
             {
-                string columnKey =  CreateCellKey(dimensionID, columnGroupValue, measure.DisplayValue);
-                Node<T> labelNode = new Node<T>(parent.RowDimension, parent.ColumnDimension, measure.DisplayValue, cellType, columnKey);
+                ColumnIDGraph.SetColumnID(dimensionSeq, dimensionID, columnGroupValue, measure.DisplayValue);
+                Node<T> labelNode = new Node<T>(parent.RowDimension, parent.ColumnDimension, measure.DisplayValue, cellType, ColumnIDGraph.GetColumnIDGraph());
                 parent.AddChild(labelNode);
             }
+            ColumnIDGraph.ClearColumnID(parent.ColumnDimension.Sequence);
         }
 
         private MeasureData<T> BuildMeasureData(Node<T> node, IEnumerable<T> measure, IEnumerable<T> group, Dimension<T> dimension)
@@ -191,8 +199,5 @@ namespace LeaderAnalytics.LeaderPivot
         private string SortValue(Dimension<T> dimension, string data) => dimension.SortValue == null ? data : dimension.SortValue(data);
 
         private string DisplayValue(Dimension<T> dimension, T data) => dimension.HeaderValue == null ? dimension.GroupValue(data) : dimension.HeaderValue(data);
-
-        private string CreateCellKey(string dimensionID, string groupValue, string measureID) => $"[{dimensionID}:{groupValue}][{measureID}]";
     }
-
 }
