@@ -39,7 +39,8 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     IsRow = true,
                     IsExpanded = true,
                     Sequence = 0,
-                    IsAscending = true
+                    IsAscending = true,
+                    IsEnabled = true
                 },
 
                 new Dimension<SalesData>
@@ -50,7 +51,8 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     IsRow = true,
                     IsExpanded = true,
                     Sequence = 1,
-                    IsAscending = true
+                    IsAscending = true,
+                    IsEnabled = true
                 },
 
 
@@ -62,7 +64,8 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     IsRow = true,
                     IsExpanded = true,
                     Sequence = 2,
-                    IsAscending = true
+                    IsAscending = true,
+                    IsEnabled = true
                 },
 
 
@@ -74,7 +77,8 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     IsRow = true,
                     IsExpanded = true,
                     Sequence = 3,
-                    IsAscending = true
+                    IsAscending = true,
+                    IsEnabled = true
                 },
 
                 // Columns
@@ -85,8 +89,9 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     HeaderValue = x => $"Year: {x.Year}",
                     IsRow = false,
                     IsExpanded = true,
-                    Sequence = 2,
-                    IsAscending = true
+                    Sequence = 0,
+                    IsAscending = true,
+                    IsEnabled = true
                 },
 
                 new Dimension<SalesData>
@@ -97,7 +102,8 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     IsRow = false,
                     IsExpanded = true,
                     Sequence = 1,
-                    IsAscending = true
+                    IsAscending = true,
+                    IsEnabled = true
                 },
 
                 new Dimension<SalesData>
@@ -108,8 +114,9 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     SortValue = x =>  System.Array.IndexOf(Months, x).ToString().PadLeft(2,'0'),
                     IsRow = false,
                     IsExpanded = true,
-                    Sequence = 0,
-                    IsAscending = true
+                    Sequence = 2,
+                    IsAscending = true,
+                    IsEnabled = true
                 }
             };
 

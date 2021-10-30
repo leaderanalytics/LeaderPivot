@@ -79,6 +79,11 @@ namespace LeaderAnalytics.LeaderPivot
         public bool CanRepositionAcrossAxis { get; set; } = true;
 
         /// <summary>
+        /// If true, the dimension will be displayed on the pivot table.  At least two dimensions must be enabled - one row and one column.  Default value is true.
+        /// </summary>
+        public bool IsEnabled { get; set; } = true;
+
+        /// <summary>
         /// This property is set and maintained internally.  The leaf (last) dimension of each axis is always expanded and user can not toggle it.  
         /// </summary>
         internal bool IsLeaf { get; set; }

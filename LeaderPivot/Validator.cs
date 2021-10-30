@@ -20,11 +20,11 @@ namespace LeaderAnalytics.LeaderPivot
             if (!(measures?.Any() ?? false))
                 throw new ArgumentNullException(nameof(measures) + " cannot be null and must contain at least one element.");
 
-            if (!dimensions.Any(x => !x.IsRow))
-                throw new Exception($"At least one column dimension is required.  One or more dimensions with {nameof(Dimension<T>.IsRow)} property set to false are required.");
+            if (!dimensions.Any(x => x.IsEnabled && !x.IsRow))
+                throw new Exception($"At least one enabled column dimension is required.  One or more dimensions with {nameof(Dimension<T>.IsEnabled)} property set to true and {nameof(Dimension<T>.IsRow)} property set to false are required.");
 
-            if (!dimensions.Any(x => x.IsRow))
-                throw new Exception($"At least one row dimension is required.  One or more dimensions with {nameof(Dimension<T>.IsRow)} property set to true are required.");
+            if (!dimensions.Any(x => x.IsEnabled && x.IsRow))
+                throw new Exception($"At least one enabled row dimension is required.  One or more dimensions with {nameof(Dimension<T>.IsEnabled)} property set to true and {nameof(Dimension<T>.IsRow)} property set to true are required.");
 
             if (dimensions.Any(x => string.IsNullOrEmpty(x.DisplayValue)))
                 throw new Exception("DisplayValue property for each Dimension is required.");
@@ -51,7 +51,7 @@ namespace LeaderAnalytics.LeaderPivot
         /// <returns></returns>
         public List<Dimension<T>> ValidateDimensions(IEnumerable<Dimension<T>> dimensions) 
         {
-            var dimList = dimensions.OrderBy(x => !x.IsRow).ThenBy(x => x.Sequence).ToList();
+            var dimList = dimensions.Where(x => x.IsEnabled).OrderBy(x => !x.IsRow).ThenBy(x => x.Sequence).ToList();
             int ordinal = 0;
 
             for (int i = 0; i < 2; i++)
@@ -69,6 +69,6 @@ namespace LeaderAnalytics.LeaderPivot
         }
             
 
-        public List<Measure<T>> SortAndFilterMeasures(IEnumerable<Measure<T>> measures) => measures.OrderBy(x => x.Sequence).Where(x => x.IsEnabled).ToList();
+        public List<Measure<T>> SortAndFilterMeasures(IEnumerable<Measure<T>> measures) => measures.Where(x => x.IsEnabled).OrderBy(x => x.Sequence).ToList();
     }
 }
