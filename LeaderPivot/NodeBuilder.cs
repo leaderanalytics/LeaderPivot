@@ -175,6 +175,7 @@ namespace LeaderAnalytics.LeaderPivot
 
             if (dimension.IsRow)
             {
+
                 lastRowGroup = group;
                 lastRowDimension = dimension;
             }
@@ -183,7 +184,7 @@ namespace LeaderAnalytics.LeaderPivot
                 var measureGroup = measure as IGrouping<String, T>;
 
                 if (measureGroup != null)
-                    lastMeasureData = MeasureDatas[node.RowDimension.Ordinal]; 
+                    lastMeasureData = MeasureDatas[dimension.Ordinal-1]; 
 
                 lastColumnGroup = group;
                 lastColumnDimension = dimension;

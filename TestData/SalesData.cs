@@ -38,7 +38,7 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     HeaderValue = x => x.Product,
                     IsRow = true,
                     IsExpanded = true,
-                    Sequence = 0,
+                    Sequence = 3,
                     IsAscending = true,
                     IsEnabled = true
                 },
@@ -50,7 +50,7 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     HeaderValue = x => x.Country,
                     IsRow = true,
                     IsExpanded = true,
-                    Sequence = 1,
+                    Sequence = 0,
                     IsAscending = true,
                     IsEnabled = true
                 },
@@ -63,7 +63,7 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     HeaderValue = x => x.State,
                     IsRow = true,
                     IsExpanded = true,
-                    Sequence = 2,
+                    Sequence = 1,
                     IsAscending = true,
                     IsEnabled = true
                 },
@@ -76,7 +76,7 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                     HeaderValue = x => x.City,
                     IsRow = true,
                     IsExpanded = true,
-                    Sequence = 3,
+                    Sequence = 2,
                     IsAscending = true,
                     IsEnabled = true
                 },
@@ -133,7 +133,7 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                 {
                     return ((x.ColumnGroup?.Sum(y => y.Quantity) ?? 0) == 0) ? 1m :  x.Measure.Sum(y => y.Quantity) / (decimal)x.ColumnGroup.Sum(z => z.Quantity);
                     
-                }, DisplayValue = "Quantity % of Column", Format="{0:P}", Sequence = 4, IsEnabled = false
+                }, DisplayValue = "Quantity % of Column", Format="{0:P}", Sequence = 4, IsEnabled = true
                 
                 },
 
@@ -145,7 +145,7 @@ namespace LeaderAnalytics.LeaderPivot.TestData
                         decimal result = (x.RowGroup?.Sum(y => y.Quantity * y.UnitPrice) ?? 0) == 0 ? 1m :  x.Measure.Sum(y => y.Quantity * y.UnitPrice) / ((decimal)x.RowGroup.Sum(y => y.Quantity * y.UnitPrice));
                         return result;
                     
-                    } , DisplayValue = "Revenue % of Row" , Format="{0:P}", Sequence = 5, IsEnabled = false
+                    } , DisplayValue = "Revenue % of Row" , Format="{0:P}", Sequence = 5, IsEnabled = true
                 },
                
                 new Measure<SalesData> { Aggragate = x => x.Measure.Sum(y => y.Quantity * y.UnitPrice), DisplayValue = "Revenue", Format="{0:C}", Sequence = 2, IsEnabled = true },
