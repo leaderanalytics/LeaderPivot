@@ -8,7 +8,7 @@
     <Authors>Leader Analytics</Authors>
     <Company>Leader Analytics</Company>
     <Product>LeaderAnalytics.LeaderPivot</Product>
-    <Description>Pivot table</Description>
+    <Description>A Pivot table with draggable dimensions and selectable measures</Description>
     <Copyright>2021 Leader Analytics</Copyright>
     <PackageProjectUrl>https://github.com/leaderanalytics/LeaderPivot</PackageProjectUrl>
     <PackageIcon>logo-xsmall.png</PackageIcon>
