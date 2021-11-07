@@ -15,9 +15,9 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   major: 1
-  minor: 0
-  patch: $[counter(variables['minor'], 1)] #this will reset when we bump minor
-  NugetVersion: $(major).$(minor).$(patch)-beta.1
+  leader_pivot_minor: 0
+  patch: $[counter(variables['leader_pivot_minor'], 1)] #this will reset when we bump minor
+  NugetVersion: $(major).$(leader_pivot_minor).$(patch)-beta.1
 
 steps:
 - task: NuGetToolInstaller@1
@@ -44,9 +44,7 @@ steps:
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'NugetVersion'
 
-   #nobuild: true
-   #versioningScheme: 'off'
-
+  
 - task: NuGetCommand@2
   inputs:
     command: 'push'
