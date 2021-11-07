@@ -1,4 +1,4 @@
-![Leader Analytics](logo.png)
+![Leader Analytics](./logo.png)
  
 # Leader Pivot
 
