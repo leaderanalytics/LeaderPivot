@@ -8,10 +8,10 @@
     <Authors>Leader Analytics</Authors>
     <Company>Leader Analytics</Company>
     <Product>LeaderAnalytics.LeaderPivot</Product>
-    <Description>A Pivot table with draggable dimensions and selectable measures</Description>
+    <Description>Core logic for grouping data, rendering, and handling UI events</Description>
     <Copyright>2021 Leader Analytics</Copyright>
     <PackageProjectUrl>https://github.com/leaderanalytics/LeaderPivot</PackageProjectUrl>
-    <PackageIcon>logo-xsmall.png</PackageIcon>
+    <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/leaderanalytics/LeaderPivot</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Leader Analytics LeaderAnalytics Pivot Table Pivot Grid Pivot Matrix</PackageTags>
@@ -29,7 +29,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\icon.png" Pack="true" PackagePath="\" />
     <None Include="..\logo-xsmall.png" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+  
+  <Target Name="CopyPackage" AfterTargets="Pack" Condition=" '$(Configuration)'=='Debug' ">
+    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="c:\NugetPackages\" />
+    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).snupkg" DestinationFolder="c:\NugetPackages\" />
+  </Target>
 </Project>
