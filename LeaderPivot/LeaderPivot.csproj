@@ -32,8 +32,4 @@
     <None Include="..\logo-xsmall.png" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
   </ItemGroup>
-
-  <Target Name="CopyPackage" AfterTargets="Pack">
-    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="c:\NugetPackages\" />
-  </Target>
 </Project>
