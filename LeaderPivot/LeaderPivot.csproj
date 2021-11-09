@@ -30,7 +30,6 @@
 
   <ItemGroup>
     <None Include="..\icon.png" Pack="true" PackagePath="\" />
-    <None Include="..\logo-xsmall.png" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   
