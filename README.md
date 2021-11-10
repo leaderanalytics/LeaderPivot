@@ -19,4 +19,4 @@ Thinking about writing a pivot table control for a specific UI?  This repo is a 
 * `MatrixBuilder` - Traverses the `Node` structure produced by `NodeBuilder` and produces a `Matrix` consisting of `MatrixCell` objects. `MatrixCell` exposes properties the UI layer will use to render a pivot table.
 
 
-[Get the LeaderPivot NuGet package](https://www.nuget.org/packages/LeaderAnalytics.LeaderPivot/).
+[Get the LeaderPivot NuGet package](https://www.nuget.org/packages/LeaderAnalytics.LeaderPivot/)
