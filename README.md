@@ -6,7 +6,7 @@ Looking for the LeaderPivot Blazor control? This repo is not it.  Please [check 
 
 
 
-Thinking about writing a pivot table control for a specific UI?  This repo is a great place to start.  LeaderPivot is a base library that creates a data structure which can be used to render a pivot table.  This library contains the logic and the low level components that are used to create the pivot table data structure.  It also contains methods that can be used to hand UI events such as collapsing/expanding nodes or rearranging dimensions.  Currently, one UI specific implementation exists for [Blazor](https://github.com/leaderanalytics/LeaderPivot.Blazor).
+Thinking about writing a pivot table control for a specific UI?  This repo is a great place to start.  LeaderPivot is a base library that creates a data structure which can be used to render a pivot table.  This library contains the logic and the low level components that are used to create the pivot table data structure.  It also contains methods that can be used to handle UI events such as collapsing/expanding nodes or rearranging dimensions.  Currently, one UI specific implementation exists for [Blazor](https://github.com/leaderanalytics/LeaderPivot.Blazor).
 
 
 ## Classes
