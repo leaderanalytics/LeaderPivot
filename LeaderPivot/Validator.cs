@@ -8,12 +8,8 @@ namespace LeaderAnalytics.LeaderPivot
 {
     public class Validator<T>
     {
-        public void Validate(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures)
+        public void Validate(IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures)
         {
-
-            if (!(data?.Any() ?? false))
-                throw new ArgumentNullException(nameof(data) + " cannot be null and must contain at least one element.");
-
             if (!(dimensions?.Any() ?? false))
                 throw new ArgumentNullException(nameof(dimensions) + " cannot be null and must contain at least one element.");
 

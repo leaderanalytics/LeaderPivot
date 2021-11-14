@@ -41,8 +41,11 @@ namespace LeaderAnalytics.LeaderPivot
         
         public Matrix BuildMatrix(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
         {
+            if (! (data?.Any() ?? false))
+                return new Matrix();
+
             CollapsedNodeDict.Clear();
-            validator.Validate(data, dimensions, measures);
+            validator.Validate(dimensions, measures);
             this.data = data;
             this.DisplayGrandTotals = displayGrandTotals;
             this.dimensions = validator.ValidateDimensions(dimensions);
