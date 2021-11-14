@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LeaderAnalytics.LeaderPivot
 {
-    public class ColumnIDGraph
+    internal class ColumnIDGraph
     {
         private string[] ColumnIDs;
 
