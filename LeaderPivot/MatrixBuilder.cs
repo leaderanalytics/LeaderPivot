@@ -188,8 +188,8 @@ namespace LeaderAnalytics.LeaderPivot
             
             // Render measure cells
             rowSpan = colSpan = 1;
-            int colIndex = 0;  // Where the column should be
-            int colCount = 0;  // Ordinal position.  If less than colIndex, insert dummy cells
+            int colIndex = 0;           // Where the column should be
+            int colCount = 0;           // Ordinal position.  If less than colIndex insert dummy cells
             IEnumerable<Node<T>> columnData = node.Children?.Where(x => !x.IsRow);
             
             if (columnData?.Any() ?? false) // Only the leaf row dimension and totals rows will contain column data.
@@ -223,7 +223,15 @@ namespace LeaderAnalytics.LeaderPivot
                     if (collapsedColumnCount > 0)
                         collapsedColumnCount--;
                 }
-                
+
+                // fill the remainder of the row to total width cells if it has fewer elements 
+                while (colCount < (ColumnIndexDict.Count))
+                {
+                    CellType missingCellType = rowCellType == CellType.Total || !LeafColumnDict.Contains(colCount) ? CellType.Total : CellType.Measure;
+                    t.Rows[rowIndex].Cells.Add(new MatrixCell(missingCellType, rowSpan, colSpan));
+                    colCount++;
+                }
+
                 t.Rows.Add(new MatrixRow());
             }
 
