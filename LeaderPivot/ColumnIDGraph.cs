@@ -24,8 +24,6 @@ namespace LeaderAnalytics.LeaderPivot
                 throw new Exception($"{nameof(dimensionSequence)} cannot be less than zero or greater than dimension count.");
             else if(string.IsNullOrEmpty(dimensionID))
                 throw new ArgumentNullException(nameof(dimensionID));
-            else if (string.IsNullOrEmpty(groupValue))
-                throw new ArgumentNullException(nameof(groupValue));
 
             string id = $"[{dimensionID}:{groupValue}{(string.IsNullOrEmpty(measureID) ? null : ":" + measureID)}]";
             ColumnIDs[dimensionSequence] = id;
