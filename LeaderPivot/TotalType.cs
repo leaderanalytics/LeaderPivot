@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace LeaderAnalytics.LeaderPivot;
 
-namespace LeaderAnalytics.LeaderPivot
+public enum TotalType
 {
-    public enum TotalType
-    {
-        None,
-        Total,
-        GrandTotal
-    }
+    None,
+    Total,
+    GrandTotal
 }
