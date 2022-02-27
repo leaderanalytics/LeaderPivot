@@ -1,6 +1,19 @@
 ﻿namespace LeaderAnalytics.LeaderPivot;
 
-public class Dimension<T>
+public class Dimension<T> : Dimension
+{
+    /// <summary>
+    /// Function of T used to group the data.
+    /// </summary>
+    public Func<T, string> GroupValue { get; set; }
+
+    /// <summary>
+    /// Function of T used to display a friendly row or column header value.  GroupValue is used if not set.
+    /// </summary>
+    public Func<T, string> HeaderValue { get; set; }
+}
+
+public class Dimension
 {
     private bool _isExpanded;
     private bool _canToggleExpansion = true;
@@ -11,16 +24,6 @@ public class Dimension<T>
     /// This value is also used to uniquely identify the dimension.  DisplayValue can not be null and must be unique for each Dimension.
     /// </summary>
     public string DisplayValue { get; set; }
-
-    /// <summary>
-    /// Function of T used to group the data.
-    /// </summary>
-    public Func<T, string> GroupValue { get; set; }
-
-    /// <summary>
-    /// Function of T used to display a friendly row or column header value.  GroupValue is used if not set.
-    /// </summary>
-    public Func<T, string> HeaderValue { get; set; }
 
     /// <summary>
     /// Function that takes the group key for further manipulation for sorting.  GroupValue is used if not set.

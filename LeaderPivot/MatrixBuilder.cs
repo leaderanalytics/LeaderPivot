@@ -13,14 +13,14 @@ public class MatrixBuilder<T>
     protected IEnumerable<T> data;
     protected IEnumerable<Dimension<T>> dimensions;
     protected List<Measure<T>> measures;
-    protected bool DisplayGrandTotals;
+    protected bool displayGrandTotals;
     protected Node<T> dataNode;
     protected Node<T> columnHeaderNode;
     private int headerHeight;   // Total number of column header rows including one topmost empty row. Also includes measure headers.
     private int headerWidth;    // Total number of row header columns   
-    private Dictionary<string, int> ColumnIndexDict;
-    private HashSet<string> CollapsedNodeDict;
-    private HashSet<int> LeafColumnDict;    // ColumnIndex of every column that is a leaf (not a total).
+    private Dictionary<string, int> columnIndexDict;
+    private HashSet<string> collapsedNodeDict;
+    private HashSet<int> leafColumnDict;    // ColumnIndex of every column that is a leaf (not a total).
     private NodeBuilder<T> nodeBuilder;
     private Validator<T> validator;
     private bool fillCollapsedCell;
@@ -30,9 +30,9 @@ public class MatrixBuilder<T>
     {
         this.validator = validator ?? throw new ArgumentNullException(nameof(validator));
         this.nodeBuilder = nodeBuilder ?? throw new ArgumentNullException(nameof(nodeBuilder));
-        ColumnIndexDict = new Dictionary<string, int>();
-        CollapsedNodeDict = new HashSet<string>();
-        LeafColumnDict = new HashSet<int>();
+        columnIndexDict = new Dictionary<string, int>();
+        collapsedNodeDict = new HashSet<string>();
+        leafColumnDict = new HashSet<int>();
     }
 
     public Matrix BuildMatrix(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
@@ -40,10 +40,10 @@ public class MatrixBuilder<T>
         if (!(data?.Any() ?? false))
             return new Matrix();
 
-        CollapsedNodeDict.Clear();
+        collapsedNodeDict.Clear();
         validator.Validate(dimensions, measures);
         this.data = data;
-        this.DisplayGrandTotals = displayGrandTotals;
+        this.displayGrandTotals = displayGrandTotals;
         this.dimensions = validator.ValidateDimensions(dimensions);
         this.measures = validator.SortAndFilterMeasures(measures);
         dataNode = nodeBuilder.Build(data, this.dimensions.ToList(), this.measures, displayGrandTotals);
@@ -53,18 +53,18 @@ public class MatrixBuilder<T>
 
     public Matrix ToggleNodeExpansion(string nodeID)
     {
-        if (CollapsedNodeDict.Contains(nodeID))
-            CollapsedNodeDict.Remove(nodeID);
+        if (collapsedNodeDict.Contains(nodeID))
+            collapsedNodeDict.Remove(nodeID);
         else
-            CollapsedNodeDict.Add(nodeID);
+            collapsedNodeDict.Add(nodeID);
 
         return buildMatrix();
     }
 
     private Matrix buildMatrix()
     {
-        ColumnIndexDict.Clear();
-        LeafColumnDict.Clear();
+        columnIndexDict.Clear();
+        leafColumnDict.Clear();
         Matrix t = new Matrix();
         BuildColumnHeaders(columnHeaderNode, t, 0, 0);
         BuildRows(dataNode, t, 0, 0);
@@ -116,7 +116,7 @@ public class MatrixBuilder<T>
             colSpan = isNodeExpanded ? GetLeafNodeCount(node, false) : measures.Count();
         }
         else
-            ColumnIndexDict.Add(node.ColumnKey, t.Rows[rowIndex].Cells.Count);
+            columnIndexDict.Add(node.ColumnKey, t.Rows[rowIndex].Cells.Count);
 
         if (rowSpan > 1)
             rowIndex = rowIndex - (rowSpan - 1);
@@ -133,7 +133,7 @@ public class MatrixBuilder<T>
             t.Rows[rowIndex].Cells.Add(newMatrixCell);
 
             if (newMatrixCell.CellType == CellType.MeasureLabel)
-                LeafColumnDict.Add(t.Rows[rowIndex].Cells.Count - 1);
+                leafColumnDict.Add(t.Rows[rowIndex].Cells.Count - 1);
         }
         fillCollapsedCell = !isNodeExpanded && node.CellType == CellType.GroupHeader;
 
@@ -195,7 +195,7 @@ public class MatrixBuilder<T>
 
             foreach (Node<T> child in columnData)
             {
-                if (!ColumnIndexDict.TryGetValue(child.ColumnKey, out colIndex))
+                if (!columnIndexDict.TryGetValue(child.ColumnKey, out colIndex))
                 {
                     collapsedColumnCount = measures.Count;
                     continue; // Column data will not be found if column is collapsed.
@@ -204,7 +204,7 @@ public class MatrixBuilder<T>
                 while (colCount < colIndex)
                 {
                     // data values are missing.  Insert dummy cells.
-                    CellType missingCellType = rowCellType == CellType.Total || !LeafColumnDict.Contains(colCount) ? CellType.Total : CellType.Measure;
+                    CellType missingCellType = rowCellType == CellType.Total || !leafColumnDict.Contains(colCount) ? CellType.Total : CellType.Measure;
                     t.Rows[rowIndex].Cells.Add(new MatrixCell(missingCellType, rowSpan, colSpan));
                     colCount++;
                 }
@@ -221,13 +221,12 @@ public class MatrixBuilder<T>
             }
 
             // fill the remainder of the row to total width cells if it has fewer elements 
-            while (colCount < (ColumnIndexDict.Count))
+            while (colCount < (columnIndexDict.Count))
             {
-                CellType missingCellType = rowCellType == CellType.Total || !LeafColumnDict.Contains(colCount) ? CellType.Total : CellType.Measure;
+                CellType missingCellType = rowCellType == CellType.Total || !leafColumnDict.Contains(colCount) ? CellType.Total : CellType.Measure;
                 t.Rows[rowIndex].Cells.Add(new MatrixCell(missingCellType, rowSpan, colSpan));
                 colCount++;
             }
-
             t.Rows.Add(new MatrixRow());
         }
 
@@ -271,6 +270,6 @@ public class MatrixBuilder<T>
         return count;
     }
 
-    private bool IsNodeExpanded(string nodeID) => !CollapsedNodeDict.Contains(nodeID);
+    private bool IsNodeExpanded(string nodeID) => !collapsedNodeDict.Contains(nodeID);
 
 }
