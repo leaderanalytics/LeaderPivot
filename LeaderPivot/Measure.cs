@@ -1,16 +1,18 @@
 ﻿namespace LeaderAnalytics.LeaderPivot;
+public class Measure<T> : Measure
+{
+    /// <summary>
+    /// A function that takes T as a parameter and performs some aggregation i.e. x => x.Sum(y => y.Quantity)
+    /// </summary>
+    public Func<MeasureData<T>, decimal> Aggragate { get; set; }
+}
 
-public class Measure<T>
+public class Measure
 {
     /// <summary>
     /// A friendly value that identifies how the data being be aggregated i.e. Amount, Quantity, Price, etc.  This value can not be null and must be unique for each Measure.
     /// </summary>
     public string DisplayValue { get; set; }
-
-    /// <summary>
-    /// A function that takes T as a parameter and performs some aggregation i.e. x => x.Sum(y => y.Quantity)
-    /// </summary>
-    public Func<MeasureData<T>, decimal> Aggragate { get; set; }
 
     /// <summary>
     /// An argument used to format the calculated value for display.  For example:  "{0:C}" for currency amounts.
