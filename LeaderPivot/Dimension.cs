@@ -75,7 +75,8 @@ public class Dimension
     public bool CanReposition { get; set; } = true;
 
     /// <summary>
-    /// If true, user can drag this dimension from row to column axis and vice versa.  Ignored if CanReposition is false.  Default value is true.
+    /// If true, user can drag this dimension from row to column axis and vice versa.  Ignored if CanReposition is false.  
+    /// This value is set to false internally if the dimension is the only one on an axis.  Default value is true.
     /// </summary>
     public bool CanRepositionAcrossAxis { get; set; } = true;
 

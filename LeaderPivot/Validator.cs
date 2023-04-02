@@ -30,7 +30,6 @@ public class Validator<T>
 
         if (!measures.Any(x => x.IsEnabled))
             throw new Exception("IsEnabed property must be true for at least one measure.");
-
     }
 
 
@@ -48,16 +47,25 @@ public class Validator<T>
         {
             var axis = dimList.Where(x => i == 0 ? x.IsRow : !x.IsRow).ToList();
 
-            for (int j = 0; j < axis.Count(); j++)
+            for (int j = 0; j < axis.Count; j++)
             {
                 axis[j].Sequence = j;
-                axis[j].IsLeaf = j == axis.Count() - 1; // Reset IsLeaf in case user drags dimension
+                axis[j].IsLeaf = j == axis.Count - 1; // Reset IsLeaf in case user drags dimension
                 axis[j].Ordinal = ordinal++;
+                axis[j].CanRepositionAcrossAxis = axis.Count > 1;
             }
         }
         return dimList;
     }
 
 
-    public List<Measure<T>> SortAndFilterMeasures(IEnumerable<Measure<T>> measures) => measures.Where(x => x.IsEnabled).OrderBy(x => x.Sequence).ToList();
+    public List<Measure<T>> ValidateMeasures(IEnumerable<Measure<T>> measures)
+    {
+        if (measures.Where(x => x.IsEnabled).Count() == 1)
+            measures.First(x => x.IsEnabled).CanDisable = false;
+        else
+            measures.All(x => x.CanDisable = true);
+
+        return measures.Where(x => x.IsEnabled).OrderBy(x => x.Sequence).ToList();
+    }
 }

@@ -14,12 +14,27 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  major: 1
-  minor: 0
-  patch: $[counter(variables['minor'], 1)] #this will reset when we bump minor
-  NugetVersion: $(major).$(minor).$(patch)-beta.2
-
+  
 steps:
+
+# nbgv need a deep clone
+
+- checkout: self
+  fetchDepth: 0
+
+# install nbgv tooling
+
+- task: DotNetCoreCLI@2  
+  displayName: Install NBGV tool
+  inputs:
+    command: custom
+    custom: tool
+    arguments: install --tool-path . nbgv
+
+# allow nbgv to set the version
+
+- script: nbgv cloud
+  displayName: Set Version
 
 - task: UseDotNet@2
   displayName: 'Use dotnet 6'
