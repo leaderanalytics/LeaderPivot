@@ -45,7 +45,7 @@ public class MatrixBuilder<T>
         this.data = data;
         this.displayGrandTotals = displayGrandTotals;
         this.dimensions = validator.ValidateDimensions(dimensions);
-        this.measures = validator.SortAndFilterMeasures(measures);
+        this.measures = validator.ValidateMeasures(measures);
         dataNode = nodeBuilder.Build(data, this.dimensions.ToList(), this.measures, displayGrandTotals);
         columnHeaderNode = nodeBuilder.BuildColumnHeaders(data, this.dimensions, this.measures, displayGrandTotals);
         return buildMatrix();

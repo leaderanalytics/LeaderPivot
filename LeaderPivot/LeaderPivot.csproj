@@ -17,11 +17,9 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>Leader Analytics LeaderAnalytics Pivot Table Pivot Grid Pivot Matrix</PackageTags>
     <PackageReleaseNotes>See Repository</PackageReleaseNotes>
-    <Version>1.0.16-beta.2</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
     <PackageId>LeaderAnalytics.LeaderPivot</PackageId>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+	<PackageOutputPath>C:\\NugetPackages</PackageOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -33,9 +31,4 @@
     <None Include="..\icon.png" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
   </ItemGroup>
-  
-  <Target Name="CopyPackage" AfterTargets="Pack" Condition=" '$(Configuration)'=='Debug' ">
-    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="c:\NugetPackages\" />
-    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).snupkg" DestinationFolder="c:\NugetPackages\" />
-  </Target>
 </Project>
