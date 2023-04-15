@@ -11,22 +11,22 @@ namespace LeaderAnalytics.LeaderPivot;
 public class MatrixBuilder<T>
 {
     protected IEnumerable<T> data;
-    protected IEnumerable<Dimension<T>> dimensions;
-    protected List<Measure<T>> measures;
+    protected IEnumerable<IDimensionT<T>> dimensions;
+    protected List<IMeasureT<T>> measures;
     protected bool displayGrandTotals;
-    protected Node<T> dataNode;
-    protected Node<T> columnHeaderNode;
+    protected INodeT<T> dataNode;
+    protected INodeT<T> columnHeaderNode;
     private int headerHeight;   // Total number of column header rows including one topmost empty row. Also includes measure headers.
     private int headerWidth;    // Total number of row header columns   
     private Dictionary<string, int> columnIndexDict;
     private HashSet<string> collapsedNodeDict;
     private HashSet<int> leafColumnDict;    // ColumnIndex of every column that is a leaf (not a total).
-    private NodeBuilder<T> nodeBuilder;
-    private Validator<T> validator;
+    private INodeBuilder<T> nodeBuilder;
+    private IValidator<T> validator;
     private bool fillCollapsedCell;
     private int fillColumnHeaderCount;
 
-    public MatrixBuilder(NodeBuilder<T> nodeBuilder, Validator<T> validator)
+    public MatrixBuilder(INodeBuilder<T> nodeBuilder, IValidator<T> validator)
     {
         this.validator = validator ?? throw new ArgumentNullException(nameof(validator));
         this.nodeBuilder = nodeBuilder ?? throw new ArgumentNullException(nameof(nodeBuilder));
@@ -35,7 +35,7 @@ public class MatrixBuilder<T>
         leafColumnDict = new HashSet<int>();
     }
 
-    public Matrix BuildMatrix(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
+    public Matrix BuildMatrix(IEnumerable<T> data, IEnumerable<IDimensionT<T>> dimensions, IEnumerable<IMeasureT<T>> measures, bool displayGrandTotals)
     {
         if (!(data?.Any() ?? false))
             return new Matrix();
@@ -71,7 +71,7 @@ public class MatrixBuilder<T>
         return t;
     }
 
-    private void BuildColumnHeaders(Node<T> node, Matrix t, int index, int peerDepth)
+    private void BuildColumnHeaders(INodeT<T> node, IMatrix t, int index, int peerDepth)
     {
         if (index == 0)
         {
@@ -89,7 +89,7 @@ public class MatrixBuilder<T>
             int columnSpan = 1;
 
             // Add row zero.  Add a cell to that row at 0,0 spanning row headers and column headers.
-            MatrixRow row = new MatrixRow();
+            IMatrixRow row = new MatrixRow();
             row.Cells.Add(new MatrixCell(CellType.MeasureLabel, headerHeight, columnSpan));
             t.Rows.Add(row);
 
@@ -123,7 +123,7 @@ public class MatrixBuilder<T>
 
         if (node.CellType != CellType.Root && !fillCollapsedCell)
         {
-            MatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan, isNodeExpanded);
+            IMatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan, isNodeExpanded);
 
             if (fillColumnHeaderCount > 0)
             {
@@ -141,11 +141,11 @@ public class MatrixBuilder<T>
             fillColumnHeaderCount = measures.Count();
 
         if (isNodeExpanded && node.Children is not null)
-            foreach (Node<T> child in node.Children)
+            foreach (INodeT<T> child in node.Children)
                 BuildColumnHeaders(child, t, index + 1, headerDepth);
     }
 
-    private void BuildRows(Node<T> node, Matrix t, int index, int peerDepth)
+    private void BuildRows(INodeT<T> node, Matrix t, int index, int peerDepth)
     {
         if (index == 0)
         {
@@ -173,7 +173,7 @@ public class MatrixBuilder<T>
 
             if (node.CellType != CellType.Root && !fillCollapsedCell)
             {
-                MatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan, isRowExpanded);
+                IMatrixCell newMatrixCell = new MatrixCell(node, rowSpan, colSpan, isRowExpanded);
 
                 if (!isRowExpanded)
                     newMatrixCell.CellType = CellType.GroupHeader;
@@ -186,14 +186,14 @@ public class MatrixBuilder<T>
         rowSpan = colSpan = 1;
         int colIndex = 0;           // Where the column should be
         int colCount = 0;           // Ordinal position.  If less than colIndex insert dummy cells
-        IEnumerable<Node<T>> columnData = node.Children?.Where(x => !x.IsRow);
+        IEnumerable<INodeT<T>> columnData = node.Children?.Where(x => !x.IsRow);
 
         if (columnData?.Any() ?? false) // Only the leaf row dimension and totals rows will contain column data.
         {
             int collapsedColumnCount = 0;
             CellType rowCellType = node.CellType == CellType.GrandTotalHeader ? CellType.GrandTotal : (node.CellType == CellType.TotalHeader && !fillCollapsedCell) ? CellType.Total : CellType.Measure;
 
-            foreach (Node<T> child in columnData)
+            foreach (INodeT<T> child in columnData)
             {
                 if (!columnIndexDict.TryGetValue(child.ColumnKey, out colIndex))
                 {
@@ -208,7 +208,7 @@ public class MatrixBuilder<T>
                     t.Rows[rowIndex].Cells.Add(new MatrixCell(missingCellType, rowSpan, colSpan));
                     colCount++;
                 }
-                MatrixCell newMatrixCell = new MatrixCell(child, rowSpan, colSpan, IsNodeExpanded(child.ID)) { CellType = collapsedColumnCount > 0 || fillCollapsedCell ? rowCellType : child.CellType };
+                IMatrixCell newMatrixCell = new MatrixCell(child, rowSpan, colSpan, IsNodeExpanded(child.ID)) { CellType = collapsedColumnCount > 0 || fillCollapsedCell ? rowCellType : child.CellType };
 
                 if (collapsedColumnCount == 0 && !(child.ColumnDimension?.IsLeaf ?? false))
                     newMatrixCell.CellType = CellType.Total;
@@ -233,24 +233,24 @@ public class MatrixBuilder<T>
         fillCollapsedCell = !isRowExpanded && node.CellType == CellType.GroupHeader;
 
         if (isRowExpanded && node.Children is not null)
-            foreach (Node<T> child in node.Children.Where(x => x.IsRow))
+            foreach (INodeT<T> child in node.Children.Where(x => x.IsRow))
                 BuildRows(child, t, ++index, peerDepth + 1);
     }
 
     // Finds the dimension (row or column) that has the greatest number of expanded levels.
-    private int GetHeaderDepth(Node<T> node, bool checkRows, int maxDepth)
+    private int GetHeaderDepth(INodeT<T> node, bool checkRows, int maxDepth)
     {
         int tmp = maxDepth + 1;
 
         if (IsNodeExpanded(node.ID) && node.Children is not null)
-            foreach (Node<T> child in node.Children.Where(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)))
+            foreach (INodeT<T> child in node.Children.Where(x => (checkRows && x.IsRow) || (!checkRows && !x.IsRow)))
                 maxDepth = Math.Max(maxDepth, GetHeaderDepth(child, checkRows, tmp));
 
         return Math.Max(maxDepth, tmp);
     }
 
     // Counts the number of leaf nodes at all levels
-    private int GetLeafNodeCount(Node<T> node, bool checkRows)
+    private int GetLeafNodeCount(INodeT<T> node, bool checkRows)
     {
         int count = 0;
 
@@ -263,7 +263,7 @@ public class MatrixBuilder<T>
         else
         {
             if (node.Children is not null)
-                foreach (Node<T> child in node.Children.Where(x => ((checkRows && x.IsRow) || (!checkRows && !x.IsRow))))
+                foreach (INodeT<T> child in node.Children.Where(x => ((checkRows && x.IsRow) || (!checkRows && !x.IsRow))))
                     count += GetLeafNodeCount(child, checkRows);
         }
 

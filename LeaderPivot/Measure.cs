@@ -1,5 +1,5 @@
 ﻿namespace LeaderAnalytics.LeaderPivot;
-public class Measure<T> : Measure
+public class Measure<T> : Measure, IMeasureT<T>
 {
     /// <summary>
     /// A function that takes T as a parameter and performs some aggregation i.e. x => x.Sum(y => y.Quantity)
@@ -7,7 +7,7 @@ public class Measure<T> : Measure
     public Func<MeasureData<T>, decimal> Aggragate { get; set; }
 }
 
-public class Measure
+public class Measure : IMeasure
 {
     /// <summary>
     /// A friendly value that identifies how the data being be aggregated i.e. Amount, Quantity, Price, etc.  This value can not be null and must be unique for each Measure.
