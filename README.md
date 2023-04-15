@@ -6,7 +6,7 @@ LeaderPivot is a base library that generates a data structure which can be used 
 
 LeaderPivot contains the logic and the low level components that are used to create the pivot grid data structure.  It also contains methods that can be used to handle UI events such as collapsing/expanding nodes or rearranging dimensions.  
 
-Currently, two UI specific implementation exist: 
+Currently, three UI specific implementation exist: 
 
 [Blazor control](https://github.com/leaderanalytics/LeaderPivot.Blazor)
 
@@ -15,6 +15,8 @@ Currently, two UI specific implementation exist:
 [Blazor live demo](https://leaderanalytics.com/blazor/leader-pivot-demo)
 
 [Windows Presentation Foundation (WPF) demo and control](https://github.com/leaderanalytics/LeaderPivot.XAML.WPF)
+
+[WinUI demo and control](https://github.com/leaderanalytics/LeaderPivot.XAML.WinUI)
 
 ## Classes
 
