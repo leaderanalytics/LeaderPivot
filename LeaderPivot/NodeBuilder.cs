@@ -21,24 +21,25 @@ public class NodeBuilder<T>
     public Node<T> Build(IEnumerable<T> data, List<Dimension<T>> dimensions, List<Measure<T>> measures, bool displayGrandTotals)
     {
         buildHeaders = false;
-        Measures = measures;
-        MeasureDatas = new MeasureData<T>[dimensions.Count];
-        this.displayGrandTotals = displayGrandTotals;
-        Node<T> root = new Node<T>(null, null, null, CellType.Root);
-        ColumnIDGraph = new ColumnIDGraph(dimensions.Where(x => !x.IsRow).Count() + 1);
-        grandTotalColumnSeq = dimensions.Where(x => !x.IsRow).Count();
-        BuildNodes(root, dimensions, data);
-        return root;
+        return BuildInternal(data, dimensions, measures, displayGrandTotals);
     }
 
     public Node<T> BuildColumnHeaders(IEnumerable<T> data, IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures, bool displayGrandTotals)
     {
         buildHeaders = true;
-        this.displayGrandTotals = displayGrandTotals;
+        return BuildInternal(data, dimensions.Where(x => !x.IsRow).ToList(), measures.ToList(), displayGrandTotals);
+    }
+
+    private Node<T> BuildInternal(IEnumerable<T> data, List<Dimension<T>> dimensions, List<Measure<T>> measures, bool displayGrandTotals)
+    {
+        int rowDimCount = dimensions.Where(x => !x.IsRow).Count();
         Node<T> root = new Node<T>(null, null, null, CellType.Root);
-        ColumnIDGraph = new ColumnIDGraph(dimensions.Where(x => !x.IsRow).Count() + 1);
-        grandTotalColumnSeq = dimensions.Where(x => !x.IsRow).Count();
-        BuildNodes(root, dimensions.Where(x => !x.IsRow).ToList(), data);
+        Measures = measures;
+        MeasureDatas = new MeasureData<T>[dimensions.Count];
+        this.displayGrandTotals = displayGrandTotals;
+        ColumnIDGraph = new ColumnIDGraph(rowDimCount + 1);
+        grandTotalColumnSeq = rowDimCount;
+        BuildNodes(root, dimensions, data);
         return root;
     }
 
@@ -73,10 +74,7 @@ public class NodeBuilder<T>
             if (!dim.IsRow && !dim.IsLeaf)
                 ColumnIDGraph.SetColumnID(dim.Sequence, dim.ID, grp.Key);
 
-            MeasureData<T> measureData = null;
-
-            if (!buildHeaders)
-                measureData = BuildMeasureData(node, grp, data, dim);
+            MeasureData<T> measureData = buildHeaders ? null : BuildMeasureData(node, grp, data, dim);
 
             if (!(!dim.IsRow && dim.IsLeaf)) // Cannot be both column and leaf since there are no more dimensions.
             {
@@ -168,7 +166,6 @@ public class NodeBuilder<T>
 
         if (dimension.IsRow)
         {
-
             lastRowGroup = group;
             lastRowDimension = dimension;
         }
@@ -177,7 +174,7 @@ public class NodeBuilder<T>
             var measureGroup = measure as IGrouping<String, T>;
 
             if (measureGroup != null)
-                lastMeasureData = MeasureDatas[dimension.Ordinal - 1];
+                lastMeasureData = MeasureDatas[node.RowDimension.Ordinal];
 
             lastColumnGroup = group;
             lastColumnDimension = dimension;
