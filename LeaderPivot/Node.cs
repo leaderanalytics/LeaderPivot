@@ -4,15 +4,15 @@
 /// Represents an element in a hierarchical data structure
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class Node<T> : Node
+public class Node<T> : Node, INodeT<T>
 {
-    public Dimension<T> RowDimension { get; set; }
-    public Dimension<T> ColumnDimension { get; set; }
-    public List<Node<T>> Children { get; set; }
+    public IDimensionT<T> RowDimension { get; set; }
+    public IDimensionT<T> ColumnDimension { get; set; }
+    public List<INodeT<T>> Children { get; set; }
     public TotalType totalType;
     public bool isLabel;
 
-    public Node(Dimension<T> rowDimension, Dimension<T> columnDimension, object val, CellType cellType, string columnKey = null)
+    public Node(IDimensionT<T> rowDimension, IDimensionT<T> columnDimension, object val, CellType cellType, string columnKey = null)
     {
         RowDimension = rowDimension;
         ColumnDimension = columnDimension;
@@ -26,17 +26,17 @@ public class Node<T> : Node
             ID = $"{rowDimension?.ID ?? columnDimension.ID}:{val}";
     }
 
-    public void AddChild(Node<T> child)
+    public void AddChild(INodeT<T> child)
     {
         if (Children == null)
-            Children = new List<Node<T>>();
+            Children = new List<INodeT<T>>();
 
         Children.Add(child);
     }
 }
 
 
-public abstract class Node
+public abstract class Node : INode
 {
     public string ID { get; protected set; }
     public CellType CellType { get; set; }

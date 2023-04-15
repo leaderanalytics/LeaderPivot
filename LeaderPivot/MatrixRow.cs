@@ -3,9 +3,9 @@
 /// <summary>
 /// A row on a matrix.  A row has a theoretically unlimited number of columns.
 /// </summary>
-public class MatrixRow
+public class MatrixRow : IMatrixRow
 {
-    public List<MatrixCell> Cells { get; set; }
+    public List<IMatrixCell> Cells { get; set; }
 
-    public MatrixRow() => Cells = new List<MatrixCell>();
+    public MatrixRow() => Cells = new List<IMatrixCell>();
 }
