@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a single value in a rectangular matrix.
 /// </summary>
-public class MatrixCell
+public class MatrixCell : IMatrixCell
 {
     public object Value { get; set; }
     public CellType CellType { get; set; }
@@ -23,7 +23,7 @@ public class MatrixCell
         IsExpanded = isExpanded;
     }
 
-    public MatrixCell(Node node, int rowSpan = 1, int colSpan = 1, bool isExpanded = true)
+    public MatrixCell(INode node, int rowSpan = 1, int colSpan = 1, bool isExpanded = true)
     {
         Value = node.Value;
         CellType = node.CellType;
