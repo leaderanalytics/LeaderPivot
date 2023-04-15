@@ -1,8 +1,8 @@
 ﻿namespace LeaderAnalytics.LeaderPivot;
 
-public class Validator<T>
+public class Validator<T> : IValidator<T>
 {
-    public void Validate(IEnumerable<Dimension<T>> dimensions, IEnumerable<Measure<T>> measures)
+    public void Validate(IEnumerable<IDimensionT<T>> dimensions, IEnumerable<IMeasureT<T>> measures)
     {
         if (!(dimensions?.Any() ?? false))
             throw new ArgumentNullException(nameof(dimensions) + " cannot be null and must contain at least one element.");
@@ -38,14 +38,14 @@ public class Validator<T>
     /// </summary>
     /// <param name="dimensions"></param>
     /// <returns></returns>
-    public List<Dimension<T>> ValidateDimensions(IEnumerable<Dimension<T>> dimensions)
+    public List<IDimensionT<T>> ValidateDimensions(IEnumerable<IDimensionT<T>> dimensions)
     {
         var dimList = dimensions.Where(x => x.IsEnabled).OrderBy(x => !x.IsRow).ThenBy(x => x.Sequence).ToList();
         int ordinal = 0;
 
         for (int i = 0; i < 2; i++)
         {
-            var axis = dimList.Where(x => i == 0 ? x.IsRow : !x.IsRow).ToList();
+            var axis = dimList.Where(x => i == 0 ? x.IsRow : !x.IsRow).Cast<Dimension<T>>().ToList();
 
             for (int j = 0; j < axis.Count; j++)
             {
@@ -59,7 +59,7 @@ public class Validator<T>
     }
 
 
-    public List<Measure<T>> ValidateMeasures(IEnumerable<Measure<T>> measures)
+    public List<IMeasureT<T>> ValidateMeasures(IEnumerable<IMeasureT<T>> measures)
     {
         if (measures.Where(x => x.IsEnabled).Count() == 1)
             measures.First(x => x.IsEnabled).CanDisable = false;

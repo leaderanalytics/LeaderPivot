@@ -1,6 +1,6 @@
 ﻿namespace LeaderAnalytics.LeaderPivot;
 
-public class Dimension<T> : Dimension
+public class Dimension<T> : Dimension, IDimensionT<T>
 {
     /// <summary>
     /// Function of T used to group the data.
@@ -13,7 +13,7 @@ public class Dimension<T> : Dimension
     public Func<T, string> HeaderValue { get; set; }
 }
 
-public class Dimension
+public class Dimension : IDimension
 {
     private bool _isExpanded;
     private bool _canToggleExpansion = true;
@@ -88,11 +88,11 @@ public class Dimension
     /// <summary>
     /// This property is set and maintained internally.  The leaf (last) dimension of each axis is always expanded and user can not toggle it.  
     /// </summary>
-    internal bool IsLeaf { get; set; }
+    public bool IsLeaf { get; internal set; }
 
     /// <summary>
     /// This property is set and maintained internally.  Ordinal is the ordinal position of a dimension across both axis.  It is
     /// used to create a node ID.
     /// </summary>
-    internal int Ordinal { get; set; }
+    public int Ordinal { get; internal set; }
 }
