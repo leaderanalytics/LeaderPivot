@@ -11,7 +11,6 @@ namespace LeaderAnalytics.LeaderPivot;
 public class NodeBuilder<T> : INodeBuilder<T>
 {
     private List<IMeasureT<T>> Measures { get; set; }
-    private IMeasureData<T>[] MeasureDatas;
     private bool buildHeaders;
     private string grandTotalColumnID = Guid.NewGuid().ToString();
     private int grandTotalColumnSeq;
@@ -35,15 +34,14 @@ public class NodeBuilder<T> : INodeBuilder<T>
         int rowDimCount = dimensions.Where(x => !x.IsRow).Count();
         INodeT<T> root = new Node<T>(null, null, null, CellType.Root);
         Measures = measures;
-        MeasureDatas = new MeasureData<T>[dimensions.Count];
         this.displayGrandTotals = displayGrandTotals;
         ColumnIDGraph = new ColumnIDGraph(rowDimCount + 1);
         grandTotalColumnSeq = rowDimCount;
-        BuildNodes(root, dimensions, data);
+        BuildNodes(root, dimensions, data, new MeasureData<T>(null,data,null));
         return root;
     }
 
-    private void BuildNodes(INodeT<T> parent, List<IDimensionT<T>> dimensions, IEnumerable<T> data)
+    private void BuildNodes(INodeT<T> parent, List<IDimensionT<T>> dimensions, IEnumerable<T> data, IMeasureData<T> measureData)
     {
         if (!(dimensions?.Any() ?? false))
             return;
@@ -74,11 +72,11 @@ public class NodeBuilder<T> : INodeBuilder<T>
             if (!dim.IsRow && !dim.IsLeaf)
                 ColumnIDGraph.SetColumnID(dim.Sequence, dim.ID, grp.Key);
 
-            MeasureData<T> measureData = buildHeaders ? null : BuildMeasureData(node, grp, data, dim);
+            IMeasureData<T> localMeasureData = BuildMeasureData(measureData, node, grp, data, dim);
 
             if (!(!dim.IsRow && dim.IsLeaf)) // Cannot be both column and leaf since there are no more dimensions.
             {
-                BuildNodes(node, dimensions.Skip(1).ToList(), grp);
+                BuildNodes(node, dimensions.Skip(1).ToList(), grp, localMeasureData);
 
                 if (dim.IsRow || buildHeaders)
                 {
@@ -90,11 +88,14 @@ public class NodeBuilder<T> : INodeBuilder<T>
                         parent.AddChild(node);
 
                         if (!buildHeaders)
-                            BuildNodes(node, dimensions.Where(x => !x.IsRow).ToList(), grp);
+                            BuildNodes(node, dimensions.Where(x => !x.IsRow).ToList(), grp, localMeasureData);
                     }
 
                     if (displayGrandTotals && !buildHeaders)
-                        BuildMeasures(node, null, measureData, CellType.GrandTotal, "GrandTotal");
+                    {
+                        localMeasureData.ColumnGroup = grp;  // make percent of column calculations show up as 100%
+                        BuildMeasures(node, null, localMeasureData, CellType.GrandTotal, "GrandTotal");
+                    }
                 }
             }
 
@@ -105,7 +106,7 @@ public class NodeBuilder<T> : INodeBuilder<T>
                 else
                 {
                     CellType cellType = parent.CellType == CellType.GrandTotalHeader ? CellType.GrandTotal : parent.RowDimension.IsLeaf && dim.IsLeaf ? CellType.Measure : CellType.Total;
-                    BuildMeasures(parent, dim, measureData, cellType, grp.Key); // Add measures for total rows
+                    BuildMeasures(parent, dim, localMeasureData, cellType, grp.Key); // Add measures for total rows
                 }
             }
         }
@@ -120,14 +121,14 @@ public class NodeBuilder<T> : INodeBuilder<T>
                 BuildMeasureLabels(node, "GrandTotal");
             else
             {
-                BuildNodes(node, dimensions.Where(x => !x.IsRow).ToList(), data);
-                MeasureData<T> measureData = BuildMeasureData(node, data, data, dim); // Grand Totals column 
-                BuildMeasures(node, null, measureData, CellType.GrandTotal, "GrandTotal");
+                IMeasureData<T> localMeasureData = BuildMeasureData(measureData, node, data, data, dim);
+                BuildNodes(node, dimensions.Where(x => !x.IsRow).ToList(), data, localMeasureData);
+                BuildMeasures(node, null, localMeasureData, CellType.GrandTotal, "GrandTotal");
             }
         }
     }
 
-    private void BuildMeasures(INodeT<T> parent, IDimensionT<T> columnDim, MeasureData<T> measureData, CellType cellType, string cellKey)
+    private void BuildMeasures(INodeT<T> parent, IDimensionT<T> columnDim, IMeasureData<T> measureData, CellType cellType, string cellKey)
     {
         // Measure are always leaf node columns and are always expanded.
         foreach (IMeasureT<T> measure in Measures)
@@ -155,36 +156,19 @@ public class NodeBuilder<T> : INodeBuilder<T>
         ColumnIDGraph.ClearColumnID(parent.ColumnDimension.Sequence);
     }
 
-    private MeasureData<T> BuildMeasureData(INodeT<T> node, IEnumerable<T> measure, IEnumerable<T> group, IDimensionT<T> dimension)
+    private IMeasureData<T> BuildMeasureData(IMeasureData<T> measureData, INodeT<T> node, IEnumerable<T> measure, IEnumerable<T> data, IDimensionT<T> dimension)
     {
-        IMeasureData<T> lastMeasureData = null;
-        IEnumerable<T> lastColumnGroup = null;
         IEnumerable<T> lastRowGroup = null;
-        IDimensionT<T> lastRowDimension = null;
-        IDimensionT<T> lastColumnDimension = null;
 
-
-        if (dimension.IsRow)
-        {
-            lastRowGroup = group;
-            lastRowDimension = dimension;
-        }
+        if (dimension.IsRow )
+            lastRowGroup = data;
         else
         {
             var measureGroup = measure as IGrouping<String, T>;
-
-            if (measureGroup != null)
-                lastMeasureData = MeasureDatas[node.RowDimension.Ordinal];
-
-            lastColumnGroup = group;
-            lastColumnDimension = dimension;
-            lastRowGroup = lastMeasureData?.RowGroup?.GroupBy(dimension.GroupValue).Where(x => x.Key == measureGroup.Key).FirstOrDefault();
-            lastRowDimension = lastMeasureData?.RowDimension;
+            lastRowGroup = measureData.RowGroup.GroupBy(dimension.GroupValue).Where(x => x.Key == measureGroup.Key).FirstOrDefault() ?? Enumerable.Empty<T>();
         }
-
-        MeasureData<T> measureData = new MeasureData<T>(measure, lastRowGroup, lastColumnGroup, lastRowDimension, lastColumnDimension);
-        MeasureDatas[dimension.Ordinal] = measureData;
-        return measureData;
+        IMeasureData<T> localMeasureData = new MeasureData<T>(measure, lastRowGroup, data);
+        return localMeasureData;
     }
 
     private string SortValue(IDimensionT<T> dimension, string data) => dimension.SortValue == null ? data : dimension.SortValue(data);

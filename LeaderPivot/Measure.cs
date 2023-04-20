@@ -4,7 +4,7 @@ public class Measure<T> : Measure, IMeasureT<T>
     /// <summary>
     /// A function that takes T as a parameter and performs some aggregation i.e. x => x.Sum(y => y.Quantity)
     /// </summary>
-    public Func<MeasureData<T>, decimal> Aggragate { get; set; }
+    public Func<IMeasureData<T>, decimal> Aggragate { get; set; }
 }
 
 public class Measure : IMeasure
