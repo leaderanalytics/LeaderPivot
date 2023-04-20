@@ -2,5 +2,5 @@
 
 public interface IMeasureT<T> : IMeasure
 {
-    Func<MeasureData<T>, decimal> Aggragate { get; set; }
+    Func<IMeasureData<T>, decimal> Aggragate { get; set; }
 }
