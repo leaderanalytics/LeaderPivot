@@ -77,7 +77,7 @@ steps:
   name: KeyVaultSecrets
   displayName: Get Nuget API key from Key Vault
   inputs:
-    azureSubscription: 'b5441c9b-d653-426c-8c81-21286a06fe9e'
+    azureSubscription: 'All Azure Services'
     KeyVaultName: 'LeaderAnalyticsVault'
     SecretsFilter: 'nuget-apikey'
 
