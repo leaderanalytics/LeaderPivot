@@ -8,6 +8,8 @@ using LeaderAnalytics.LeaderPivot;
 using LeaderPivot;
 
 namespace LeaderPivot.Benchmarks;
+
+[MemoryDiagnoser(false)]
 public class Benchmarks
 {
     protected List<TestVintage> TestVintages { get; private set; } = new(2500);
@@ -62,6 +64,7 @@ public class Benchmarks
             TestVintages.Add(new TestVintage { ObsDate = startDate.AddDays(i), VintageDate = startDate.AddDays(i), Value = i.ToString() });
     }
 
+    
     [Benchmark]
     public void LeaderPivotBenchmark()
     {
