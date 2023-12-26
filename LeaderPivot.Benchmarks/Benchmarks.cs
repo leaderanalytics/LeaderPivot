@@ -71,6 +71,8 @@ public class Benchmarks
         IValidator<TestVintage> validator = new Validator<TestVintage>();
         NodeBuilder = new NodeBuilder<TestVintage>();
         MatrixBuilder = new MatrixBuilder<TestVintage>(NodeBuilder, validator);
-        MatrixBuilder.BuildMatrix(TestVintages, Dimensions, Measures, true);
+        Matrix m = MatrixBuilder.BuildMatrix(TestVintages, Dimensions, Measures, true);
+        // m = MatrixBuilder.BuildMatrix(TestVintages, Dimensions, Measures, true);
+        // m = MatrixBuilder.BuildMatrix(TestVintages, Dimensions, Measures, true);
     }
 }
