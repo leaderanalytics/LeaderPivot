@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,8 +27,8 @@ public class Benchmarks
             new Dimension<TestVintage>
             {
                 DisplayValue = "Obs Date",
-                GroupValue = x => x.ObsDate.ToString(Constants.DateFormat),
-                HeaderValue = x => x.ObsDate.ToString(Constants.DateFormat),
+                GroupValue = x => x.ObsDateString,      // Do not call ToString here - uses much more memory and is slow
+                HeaderValue = x => x.ObsDateString,     // Do not call ToString here - uses much more memory and is slow
                 IsRow = true,
                 IsExpanded = true,
                 Sequence = 0,
@@ -40,8 +41,8 @@ public class Benchmarks
             new Dimension<TestVintage>
             {
                 DisplayValue = "Vintage Date",
-                GroupValue = x => x.VintageDate.ToString(Constants.DateFormat),
-                HeaderValue = x => x.VintageDate.ToString(Constants.DateFormat),
+                GroupValue = x => x.VintageDateString,
+                HeaderValue = x => x.VintageDateString,
                 IsRow = false,
                 IsExpanded = true,
                 Sequence = 0,
@@ -49,7 +50,7 @@ public class Benchmarks
                 IsEnabled = true
             }});
 
-        Measures.Add(new Measure<TestVintage> { Aggragate = x => x.Measure.Sum(y => Convert.ToDecimal(y.Value)), DisplayValue = "Value", Format = "{0:n3}", Sequence = 1, IsEnabled = true });
+        Measures.Add(new Measure<TestVintage> { Aggragate = x => x.Measure.Sum(y => y.Value), DisplayValue = "Value", Format = "{0:n3}", Sequence = 1, IsEnabled = true });
 
         BuildTestVintages();
 
@@ -61,10 +62,10 @@ public class Benchmarks
         DateTime startDate = new DateTime(1966, 8, 20);
 
         for (int i = 0; i < TestDataCount; i++)
-            TestVintages.Add(new TestVintage { ObsDate = startDate.AddDays(i), VintageDate = startDate.AddDays(i), Value = i.ToString() });
+            TestVintages.Add(new TestVintage { ObsDate = startDate.AddDays(i), VintageDate = startDate.AddDays(i), Value = i });
     }
 
-    
+
     [Benchmark]
     public void LeaderPivotBenchmark()
     {
