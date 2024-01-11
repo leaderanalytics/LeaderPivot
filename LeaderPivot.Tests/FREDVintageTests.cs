@@ -75,22 +75,22 @@ public class FREDVintageTests
     [Test]
     public async Task MatrixBuilderTest()
     {
-        Assert.IsTrue(Observations.Count > 0);
+        Assert.That(Observations.Count > 0);
         Stopwatch sw = Stopwatch.StartNew();
         Matrix matrix = MatrixBuilder.BuildMatrix(Observations, Dimensions, Measures, true);
         int rowCount = matrix.Rows.Count;
         int cellCount = matrix.Rows.Sum(x => x.Cells.Count);
         sw.Stop();
-        Assert.IsTrue(sw.Elapsed.TotalSeconds < 60);
+        Assert.That(sw.Elapsed.TotalSeconds < 60);
     }
 
     [Test]
     public async Task NodeBuilderTest()
     {
-        Assert.IsTrue(Observations.Count > 0);
+        Assert.That(Observations.Count > 0);
         Stopwatch sw = Stopwatch.StartNew();
         NodeBuilder.Build(Observations, Dimensions, Measures, true);
         sw.Stop();
-        Assert.IsTrue(sw.Elapsed.TotalSeconds < 30);
+        Assert.That(sw.Elapsed.TotalSeconds < 30);
     }
 }

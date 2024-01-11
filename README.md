@@ -29,3 +29,7 @@ Currently, three UI specific implementation exist:
 
 
 [Get the LeaderPivot NuGet package](https://www.nuget.org/packages/LeaderAnalytics.LeaderPivot/)
+
+## Version History
+2.0.0 - Update to net 8.
+1.0.0 - Initial release, net 6.

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
 	<ImplicitUsings>enable</ImplicitUsings>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
@@ -30,5 +30,9 @@
   <ItemGroup>
     <None Include="..\icon.png" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
   </ItemGroup>
 </Project>
