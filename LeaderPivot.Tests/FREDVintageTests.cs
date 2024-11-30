@@ -55,7 +55,7 @@ public class FREDVintageTests
 
     private void BuildFredClient()
     {
-        string path = "O:\\LeaderAnalytics\\Config\\Vyntix.Fred.FredClient\\apiKey.txt";
+        string path = "C:\\Users\\Sam\\OneDrive\\LeaderAnalytics\\Config\\Vyntix.Fred.FredClient\\apiKey.txt";
         string apiKey = System.IO.File.ReadAllText(path);
         HttpClient httpClient = new HttpClient() { BaseAddress = new Uri(FredClientConfig.BaseAPIURL) };
         FredClientConfig config = new FredClientConfig { MaxDownloadRetries = 3, ErrorDelay = 2000, MaxRequestsPerMinute = 60 }; // MaxDownloadRetries should be greater than 1
@@ -75,22 +75,22 @@ public class FREDVintageTests
     [Test]
     public async Task MatrixBuilderTest()
     {
-        Assert.IsTrue(Observations.Count > 0);
+        Assert.That(Observations.Count, Is.GreaterThan(0));
         Stopwatch sw = Stopwatch.StartNew();
         Matrix matrix = MatrixBuilder.BuildMatrix(Observations, Dimensions, Measures, true);
         int rowCount = matrix.Rows.Count;
         int cellCount = matrix.Rows.Sum(x => x.Cells.Count);
         sw.Stop();
-        Assert.IsTrue(sw.Elapsed.TotalSeconds < 60);
+        Assert.That(sw.Elapsed.TotalSeconds, Is.LessThan(60));
     }
 
     [Test]
     public async Task NodeBuilderTest()
     {
-        Assert.IsTrue(Observations.Count > 0);
+        Assert.That(Observations.Count, Is.GreaterThan(0));
         Stopwatch sw = Stopwatch.StartNew();
         NodeBuilder.Build(Observations, Dimensions, Measures, true);
         sw.Stop();
-        Assert.IsTrue(sw.Elapsed.TotalSeconds < 30);
+        Assert.That(sw.Elapsed.TotalSeconds, Is.LessThan(30));
     }
 }
