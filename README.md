@@ -31,5 +31,6 @@ Currently, three UI specific implementation exist:
 [Get the LeaderPivot NuGet package](https://www.nuget.org/packages/LeaderAnalytics.LeaderPivot/)
 
 Release Notes:
-Version 2.x - Target net9;net8
+Version 3.x - Target net9;net8
+Version 2.x - Target net8
 Version 1.x - Target net7;net6
